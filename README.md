@@ -56,3 +56,24 @@ If `/form` is opened without a `ref` token, or the signed token is expired/inval
 3. Login flow: mobile → `POST /api/request-otp` → six-digit email OTP (10-minute expiry) → `POST /api/verify-otp` → HttpOnly Secure SameSite=Strict session cookie (8 hours) → `GET /api/lookup` returns profile and signed QR referral token. `POST /api/logout` clears the cookies. The code is not displayed on the site or returned by the API.
 4. **Critical security limitation:** This is a serverless **stateless** OTP pilot without a database. A valid challenge cookie can potentially be replayed during its lifetime and an instance-local rate limiter cannot enforce global attempt limits across Vercel instances. Configure Vercel Firewall/WAF rate limits on `/api/request-otp` and `/api/verify-otp` and restrict the rollout until you add durable one-time-use counters/rate limiting or an established identity provider. Do not describe this as production-grade single-use OTP.
 5. No email addresses, OTPs or signing secrets are embedded in public JavaScript. Email OTP does not verify that the registered mobile belongs to the caller; it verifies possession of the mapped mailbox. User-provided cookies are authenticated and never trusted without cryptographic verification.
+
+
+## Exact Google Workspace OTP checklist (V3 deployment)
+
+1. In Google Workspace, enable 2-Step Verification for the sender mailbox and create an App Password at https://myaccount.google.com/apppasswords. Use the mailbox's app password, **not** the regular login password. The Workspace admin can disable App Passwords. Never commit or share credentials.
+2. In Vercel > Project > Settings > Environment Variables, add `SMTP_USER` = full Workspace email, `SMTP_PASS` = the app password (typically entered without spaces), `OTP_SIGNING_SECRET` = fresh randomly generated 32+ character secret, `REFERRAL_SIGNING_SECRET` = a **different** randomly generated 32+ character secret, `REFERRAL_PUBLIC_HOST` = `nbloans-referrals.vercel.app`. Enable for Production (and Preview only if intended).
+3. Redeploy **after** setting environment variables. Vercel deployments capture environment variables at build/deployment time; a previous deployment does not pick up newly added values automatically.
+4. `npm install`, `npm test`, and `vercel dev` locally (Node >=20); on Vercel, deploy through linked GitHub repository or `vercel --prod`. Don't upload `.env` files or private secrets to GitHub.
+5. Open `/vh-only`, enter the mobile of a real pilot roster member who has an authorized email, choose **Email verification code**, check the *associated mailbox*, enter the 6-digit OTP within 10 minutes, and verify the profile and QR load. If nothing arrives, check mailbox spam, Vercel Function logs, and Workspace SMTP restrictions. A generic on-screen response is deliberate, to prevent roster enumeration.
+6. On success, an encrypted HttpOnly, Secure, SameSite=Strict session cookie lasts up to 8 hours; profile API requires it. Test logout and an invalid/expired OTP. Do not expect the old `Shiv123` PIN to work.
+7. Put Vercel Firewall rate limits on `/api/request-otp` and `/api/verify-otp` before distributing this to all VHs. Stateless cookies and per-instance limits are **not** strict single-use OTP or global attempt tracking. Durable, cross-instance replay protection requires a persistent store or external auth provider. Do not rely on this pilot for high-assurance authentication.
+8. If the old site says `Referral service not configured`, confirm both 32+ character signing secrets are set on the **correct Vercel project/environment** and redeploy. If email errors arise, confirm `SMTP_USER` / `SMTP_PASS` and look for `OTP delivery error` in the Vercel Function Logs.
+
+### API contract
+
+- `POST /api/request-otp` JSON `{"mobile":"<10-digit number>"}`. Returns a non-enumerating message and sets encrypted `nb_otp_challenge` cookie when matched. Never returns the code.
+- `POST /api/verify-otp` JSON `{"code":"<6-digit code>"}` with browser credentials. On success, clears challenge and sets `nb_vh_session` HttpOnly cookie.
+- `GET /api/lookup` with browser credentials returns only the authenticated VH's public profile and a signed referral token (never email, code, secret or DSA code in the public profile).
+- `POST /api/logout` clears both cookies.
+
+**Note:** Email possession is verified; this does not verify that the user's handset owns the typed number. The mapping is server-side, drawn only from the 26 profiles in the `Shivankur` worksheet.
