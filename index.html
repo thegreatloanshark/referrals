@@ -11,7 +11,7 @@
 <body>
   <header class="site-header"><div class="container header-inner">
     <a class="wordmark" href="/" aria-label="NoBroker Loans referral home"><span class="brand-mark">%</span><span class="brand-words"><strong>NOBROKER</strong><span>LOANS</span></span></a>
-    <a class="header-link" href="#how-it-works">How it works <span aria-hidden="true">↗</span></a>
+    <nav class="header-nav"><a class="header-link" href="#how-it-works">How it works</a><a class="header-link" href="#tools">Create referral link</a></nav>
   </div></header>
 
   <main>
@@ -33,16 +33,49 @@
       <article class="step"><span class="step-no">03</span><h3>Earn</h3><p>Once their first eligible home loan file qualifies under the program terms, your reward is processed.</p></article>
     </div></div></section>
 
-    <section class="section section-soft" id="refer"><div class="container refer-grid"><div><p class="eyebrow">Make an introduction</p><h2>Help another Loan Partner move forward.</h2><p class="muted">Have someone in mind? Use the referral link provided by your NoBroker Loans contact. Your referral will be attributed automatically when the link is configured.</p><div class="form-note"><span class="note-dot"></span><span>Onboarding alone does not qualify for a reward. The first eligible file must meet program criteria.</span></div></div><div class="form-card">
-      <h3>Refer a Loan Partner</h3><p class="muted small" id="formIntro">Continue to the referral form.</p>
-      <a id="formButton" class="btn btn-red full-width" href="#" aria-disabled="true">Continue to referral form <span aria-hidden="true">↗</span></a>
-      <p id="formHelp" class="small fineprint">Your referral form link will be available here once your Vertical Head's link is configured.</p>
+    <section class="section section-soft" id="refer"><div class="container refer-grid"><div><p class="eyebrow">Make an introduction</p><h2>Refer a Loan Partner.</h2><p class="muted">Submit the details of a Loan Partner you know. The referral is linked to your unique Vertical Head URL automatically.</p><div class="form-note"><span class="note-dot"></span><span>The referral qualifies for a reward only after the first eligible home loan file meets the campaign criteria.</span></div></div><div class="form-card">
+      <h3>Referral form</h3>
+      <form id="referralForm" autocomplete="on">
+        <div class="referral-fields">
+          <label class="field"><span>Your full name</span><input name="referrerName" type="text" autocomplete="name" maxlength="100" required></label>
+          <label class="field"><span>Your registered mobile number</span><input name="referrerMobile" type="tel" inputmode="numeric" autocomplete="tel-national" pattern="[6-9][0-9]{9}" maxlength="10" placeholder="10-digit mobile number" required></label>
+          <label class="field"><span>Your email address</span><input name="referrerEmail" type="email" autocomplete="email" maxlength="180" required></label>
+          <label class="field"><span>Your city</span><input name="referrerCity" type="text" autocomplete="address-level2" maxlength="100" required></label>
+          <label class="field"><span>Referred Loan Partner's full name</span><input name="referredName" type="text" maxlength="100" required></label>
+          <label class="field"><span>Referred Loan Partner's mobile number</span><input name="referredMobile" type="tel" inputmode="numeric" pattern="[6-9][0-9]{9}" maxlength="10" placeholder="10-digit mobile number" required></label>
+          <label class="field"><span>Referred Loan Partner's email address</span><input name="referredEmail" type="email" maxlength="180" required></label>
+        </div>
+        <label class="consent-field"><input name="consent" type="checkbox" required><span>I confirm that I have the referred person's permission to share their contact details with NoBroker Loans.</span></label>
+        <button class="btn btn-red full-width" type="submit" id="submitReferral">Continue to submit <span aria-hidden="true">↗</span></button>
+        <p id="referralFeedback" class="small fineprint" role="status" aria-live="polite"></p>
+      </form>
       <button class="copy-btn" type="button" id="copyButton">Copy this referral page link <span aria-hidden="true">⧉</span></button>
     </div></div></section>
+
+    <section class="section section-white" id="tools"><div class="container tool-grid">
+      <div class="tool-intro"><p class="eyebrow">Referral tools</p><h2>Your link. Ready to share.</h2><p class="muted">Create a personalised link with tracking parameters, download its QR code, or make a shareable referral creative. No sign-in required.</p>
+        <div class="tool-note">UTM parameters help identify campaign traffic. Referral ownership and rewards must still be verified through your team's approved process.</div>
+      </div>
+      <div class="tool-card">
+        <form id="builderForm" autocomplete="off">
+          <div class="field-grid">
+            <label class="field"><span>Vertical Head name</span><input id="headName" type="text" placeholder="e.g. Pawan" maxlength="60" required></label>
+            <label class="field"><span>Referral code</span><input id="headCode" type="text" placeholder="e.g. pawan" maxlength="48" pattern="[A-Za-z0-9_-]+" required></label>
+            <label class="field"><span>UTM source</span><input id="utmSource" type="text" value="partner_referral" maxlength="80"></label>
+            <label class="field"><span>UTM medium</span><input id="utmMedium" type="text" value="whatsapp" maxlength="80"></label>
+            <label class="field"><span>UTM campaign</span><input id="utmCampaign" type="text" value="loan_partner_referral" maxlength="100"></label>
+            <label class="field"><span>UTM content <small>(optional)</small></span><input id="utmContent" type="text" maxlength="100" placeholder="e.g. pilot_nov"></label>
+          </div>
+          <div class="field output-field"><label for="generatedLink">Referral URL</label><div class="url-row"><input id="generatedLink" readonly aria-label="Generated referral URL"><button class="mini-btn" type="button" id="copyGenerated">Copy</button></div></div>
+          <div class="qr-tools"><div class="qr-preview"><div id="qrCode" aria-label="QR code for generated referral link"></div></div><div class="qr-actions"><p id="linkHint" class="small muted">Enter a name and referral code to create a link.</p><button id="downloadQR" class="btn btn-dark" type="button" disabled>Download QR</button><button id="downloadCreative" class="btn btn-red" type="button" disabled>Download creative</button><button id="shareWhatsApp" class="share-text-btn" type="button" disabled>Share on WhatsApp ↗</button></div></div>
+          <p id="toolFeedback" class="small tool-feedback" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+    </div></section>
 
     <section class="section terms-section"><div class="container"><h2>Good to know.</h2><div class="terms-grid"><p>Rewards are linked to a referred Loan Partner's first qualifying home loan file, not to registration or KYC alone.</p><p>The minimum home loan amount for this pilot is ₹30 lakh. Reward amounts and eligibility are subject to finalized campaign rules.</p><p>The referral should be made with the prospective partner's consent. Do not submit someone else's personal details without their permission.</p></div></div></section>
   </main>
   <footer><div class="container footer-inner"><span>NoBroker Loans</span><span>Helping partners grow, together.</span></div></footer>
-  <script src="config.js"></script><script src="script.js"></script>
+  <script src="config.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script><script src="script.js" defer></script>
 </body>
 </html>

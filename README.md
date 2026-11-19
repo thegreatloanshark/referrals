@@ -1,31 +1,21 @@
 # NoBroker Loans Referral Website
 
-Standalone static referral website intended for `nbloans-refer.vercel.app`.
+Deploy this static folder to the `nbloans-refer.vercel.app` Vercel project.
 
-## Deployment
+## Included
+- In-page referral form with seven required fields (referrer name, registered mobile, email, city; referred Loan Partner name, mobile, email) and required consent.
+- Validation for Indian 10-digit mobile numbers (starting 6-9), email, and mandatory fields.
+- Automatic Vertical Head attribution from `?vh=code` (not a visible question).
+- UTM link builder, QR downloads, downloadable 1200 x 1500 creative, WhatsApp sharing.
+- No Supabase, tracking backend, cookies, or local storage.
 
-1. Create a separate Vercel project named `nbloans-refer`.
-2. Upload or connect this folder as the project root. Framework preset: **Other**; build command: none; output directory: `.`.
-3. Select the `nbloans-refer.vercel.app` domain if available. Vercel must confirm the domain is available and assigned.
+## Connecting submissions
 
-## Referral link configuration
+The site intentionally does not store any submitted details. To enable a real submission, populate `config.js` with each approved Vertical Head's Google Form URL and the seven Google Forms `entry.<number>` field identifiers. The site will prefill that form and **redirect users to review and press Submit in Google Forms**. Each form must have matching questions; optional `attributionEntry` can capture the VH code in Google Forms. The source parameter is not independently verified.
 
-Edit `config.js`. Each participating Vertical Head gets a code and a unique form link:
+Without this configuration the form visibly explains that submissions are unavailable; it does not claim to have submitted or saved a referral. A Google Form `forms.gle` short link does not normally support field prefilling: use the long `/viewform` URL with entry IDs.
 
-```js
-heads: {
-  pawan: { name: "Pawan", formUrl: "https://docs.google.com/forms/d/e/YOUR_FORM/viewform?usp=pp_url&entry.123=PAWAN" }
-}
-```
+To get IDs, in Google Forms use **Get pre-filled link**, enter sample values, generate URL, and copy the `entry.123...` keys for each field. Actual Form sharing permissions and response access are configured inside Google Forms.
 
-Share `https://nbloans-refer.vercel.app/?vh=pawan`. Use a **prefilled** Google Form URL so the VH identifier is carried into the form response. Keep attribution fields in the form protected/validated through your operational process: prefilled Google Forms fields can be edited by users. Never use URL parameters alone as proof of referral ownership.
-
-Without a configured URL, the site does not submit or store personal information and the form CTA stays disabled. This is intentional.
-
-## Scope
-
-- No Supabase, server, API, storage, or third-party script dependencies.
-- This is separate from the payout Catalog.
-- Actual reward payment, approval, KYC, file eligibility, and tracking happen in your existing internal operations or Google Forms/Sheets workflow.
-- ₹5,000 PSU / ₹7,000 private and ₹30 lakh home loan eligibility are displayed as pilot proposals; confirm the definitive terms before launch.
-- The wordmark in the demo is a text/CSS approximation only. Replace the header with your exact approved NoBroker Loans logo asset prior to publishing.
+## Deploy
+Upload this directory to the existing Vercel project, or connect a Git repository and deploy the static root. No build command required.
