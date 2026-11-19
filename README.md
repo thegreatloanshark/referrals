@@ -1,21 +1,15 @@
-# NoBroker Loans Referral Website
+# NoBroker Loans Referral - standalone site
 
-Deploy this static folder to the `nbloans-refer.vercel.app` Vercel project.
+Static Vercel site: no Supabase, database or identity verification.
 
-## Included
-- In-page referral form with seven required fields (referrer name, registered mobile, email, city; referred Loan Partner name, mobile, email) and required consent.
-- Validation for Indian 10-digit mobile numbers (starting 6-9), email, and mandatory fields.
-- Automatic Vertical Head attribution from `?vh=code` (not a visible question).
-- UTM link builder, QR downloads, downloadable 1200 x 1500 creative, WhatsApp sharing.
-- No Supabase, tracking backend, cookies, or local storage.
+- `/`: VH profile lookup (Shiv configured for 9945048798), UTM link builder, QR and PNG creative with photo/designation.
+- `/form/`: compact seven-field referral form.
+- `/landing/`: separate campaign introduction.
 
-## Connecting submissions
+**Brand:** red #D80000, white, black, restrained pink; premium minimal B2B voice, “Your Partner in Growth.” No new sub-brand identity. Replace `assets/nbl-logo.png` with the actual approved NoBroker Loans logo before launch (not included because source asset wasn't available). The download creative currently uses plain brand-name text instead of a recreated logo: insert the authentic logo into the canvas output before publishing those creatives.
 
-The site intentionally does not store any submitted details. To enable a real submission, populate `config.js` with each approved Vertical Head's Google Form URL and the seven Google Forms `entry.<number>` field identifiers. The site will prefill that form and **redirect users to review and press Submit in Google Forms**. Each form must have matching questions; optional `attributionEntry` can capture the VH code in Google Forms. The source parameter is not independently verified.
+**Profile mapping:** Shiv / 9945048798 is a public-only preset in `config.js`; Asad and Aditya profiles are present but have no mobile number configured. Mobile matching is NOT secure authentication or OTP verification. Do not use it as access control or identity verification.
 
-Without this configuration the form visibly explains that submissions are unavailable; it does not claim to have submitted or saved a referral. A Google Form `forms.gle` short link does not normally support field prefilling: use the long `/viewform` URL with entry IDs.
+**Submissions:** No forms are saved here. Configure individual Google Forms URL and field entry IDs in `config.js` and require users to submit there.
 
-To get IDs, in Google Forms use **Get pre-filled link**, enter sample values, generate URL, and copy the `entry.123...` keys for each field. Actual Form sharing permissions and response access are configured inside Google Forms.
-
-## Deploy
-Upload this directory to the existing Vercel project, or connect a Git repository and deploy the static root. No build command required.
+Vercel domain assignment and deployment must be performed through Vercel.

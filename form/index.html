@@ -1,0 +1,18 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#d80000"><meta name="description" content="NoBroker Loans partner referral program."><title>Referral form | NoBroker Loans</title><link rel="stylesheet" href="/styles.css"></head><body><header class="site-header"><div class="container header-inner"><a class="wordmark" href="/" aria-label="NoBroker Loans"><img src="/assets/nbl-logo.png" alt="NoBroker Loans" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span class="brand-fallback" style="display:none">NoBroker Loans</span></a><nav class="header-nav"><a class="header-link" href="/form/">Referral form</a><a class="header-link" href="/landing/">About</a></nav></div></header><main><section class="form-page"><div class="container form-shell"><div class="form-top"><h1>Refer a Loan Partner.</h1><p>Enter your details and the Loan Partner’s details below.</p><p id="referrerLine" class="referrer" hidden></p></div><div class="form-card">
+
+<form autocomplete="on" id="referralForm">
+<div class="referral-fields">
+<label class="field"><span>Your full name</span><input autocomplete="name" maxlength="100" name="referrerName" required="" type="text"/></label>
+<label class="field"><span>Your registered mobile number</span><input autocomplete="tel-national" inputmode="numeric" maxlength="10" name="referrerMobile" pattern="[6-9][0-9]{9}" placeholder="10-digit mobile number" required="" type="tel"/></label>
+<label class="field"><span>Your email address</span><input autocomplete="email" maxlength="180" name="referrerEmail" required="" type="email"/></label>
+<label class="field"><span>Your city</span><input autocomplete="address-level2" maxlength="100" name="referrerCity" required="" type="text"/></label>
+<label class="field"><span>Referred Loan Partner's full name</span><input maxlength="100" name="referredName" required="" type="text"/></label>
+<label class="field"><span>Referred Loan Partner's mobile number</span><input inputmode="numeric" maxlength="10" name="referredMobile" pattern="[6-9][0-9]{9}" placeholder="10-digit mobile number" required="" type="tel"/></label>
+<label class="field"><span>Referred Loan Partner's email address</span><input maxlength="180" name="referredEmail" required="" type="email"/></label>
+</div>
+<label class="consent-field"><input name="consent" required="" type="checkbox"/><span>I confirm that I have the referred person's permission to share their contact details with NoBroker Loans.</span></label>
+<button class="btn btn-red full-width" id="submitReferral" type="submit">Continue to submit <span aria-hidden="true">↗</span></button>
+<p aria-live="polite" class="small fineprint" id="referralFeedback" role="status"></p>
+</form>
+
+</div></div></section></main><footer><div class="container footer-inner"><span>NoBroker Loans</span><span>Helping partners grow, together.</span></div></footer><script src="/config.js"></script><script src="/form.js" defer></script></body></html>
