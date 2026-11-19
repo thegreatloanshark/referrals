@@ -6,7 +6,8 @@ test('six-digit OTP challenge validates and expires',()=>{
  const challenge=createOtpChallenge('9945048798','123456',2000000000);
  assert.equal(verifyOtpChallenge(challenge,'123456',2000000001),'9945048798');
  assert.equal(verifyOtpChallenge(challenge,'111111',2000000001),null);
- assert.equal(verifyOtpChallenge(challenge,'123456',2000000601),null);
+ assert.equal(verifyOtpChallenge(challenge,'123456',2000000299),'9945048798');
+ assert.equal(verifyOtpChallenge(challenge,'123456',2000000301),null);
 });
 test('challenge tampering rejected and session sealed',()=>{
  const challenge=createOtpChallenge('9945048798','222222');

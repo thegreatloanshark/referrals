@@ -44,9 +44,51 @@ function art(){if(!selected||!token)return;c.clearRect(0,0,W,H);c.fillStyle='#FF
 }
 async function loadQR(){if(!token)return;qr=await getImage('/api/qr?token='+encodeURIComponent(token));art()}
 async function loadProfile(){const r=await fetch('/api/lookup',{credentials:'same-origin'});const data=await r.json();if(!r.ok)throw Error(data.error||'Could not retrieve profile.');selected=data.profile;token=data.token;$('profile').hidden=false;$('profile').textContent=`${selected.name} · ${selected.mobile}`;$('editor').hidden=false;$('notice').textContent='';$('profileForm').hidden=true;$('otpForm').hidden=true;await loadQR();}
-$('profileForm').addEventListener('submit',async ev=>{ev.preventDefault();const mobile=$('mobile').value.replace(/\D/g,'');$('notice').textContent='Sending verification code…';$('sendOtp').disabled=true;try{const r=await fetch('/api/request-otp',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({mobile})});const data=await r.json();if(!r.ok)throw Error(data.error||'Could not send code.');$('profileForm').hidden=true;$('otpForm').hidden=false;$('notice').textContent=data.message;}catch(e){$('notice').textContent=e.message;}finally{$('sendOtp').disabled=false;}});
-$('otpForm').addEventListener('submit',async ev=>{ev.preventDefault();$('verifyOtp').disabled=true;$('notice').textContent='Verifying…';try{const r=await fetch('/api/verify-otp',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:$('otp').value.trim()})});const data=await r.json();if(!r.ok)throw Error(data.error||'Verification failed.');$('otp').value='';await loadProfile();}catch(e){$('notice').textContent=e.message;}finally{$('verifyOtp').disabled=false;}});
-$('backToMobile').addEventListener('click',()=>{$('otpForm').hidden=true;$('profileForm').hidden=false;$('notice').textContent='';});
+let otpMobile='', resendUntil=0, resendInterval=null;
+function updateResendButton(){
+ const remaining=Math.max(0,Math.ceil((resendUntil-Date.now())/1000));
+ const button=$('resendOtp');button.disabled=remaining>0;
+ button.textContent=remaining>0?`Resend code in ${remaining}s`:'Resend code';
+ if(!remaining&&resendInterval){clearInterval(resendInterval);resendInterval=null;}
+}
+function startResendCooldown(){
+ resendUntil=Date.now()+60_000;
+ if(resendInterval)clearInterval(resendInterval);
+ updateResendButton();resendInterval=setInterval(updateResendButton,1000);
+}
+async function sendOtp(mobile,{resend=false}={}){
+ const button=resend?$('resendOtp'):$('sendOtp');
+ button.disabled=true;
+ $('notice').textContent=resend?'Sending another code…':'Sending verification code…';
+ try{
+  const r=await fetch('/api/request-otp',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({mobile})});
+  const data=await r.json();
+  if(!r.ok)throw Error(data.error||'Could not send code.');
+  otpMobile=mobile;$('otp').value='';
+  $('profileForm').hidden=true;$('otpForm').hidden=false;
+  $('notice').textContent='If your mobile number is registered, a six-digit code has been sent to its associated email address. Check Spam as well. The code expires in 5 minutes.';
+  startResendCooldown();
+ }catch(e){$('notice').textContent=e.message+(resend?' Your previous code may still work until it expires.':'');}
+ finally{if(!resend)button.disabled=false;else updateResendButton();}
+}
+$('profileForm').addEventListener('submit',async ev=>{ev.preventDefault();await sendOtp($('mobile').value.replace(/\D/g,''));});
+$('resendOtp').addEventListener('click',async()=>{
+ if(Date.now()<resendUntil)return;
+ await sendOtp(otpMobile,{resend:true});
+});
+$('otpForm').addEventListener('submit',async ev=>{
+ ev.preventDefault();$('verifyOtp').disabled=true;$('notice').textContent='Verifying…';
+ try{
+  const r=await fetch('/api/verify-otp',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:$('otp').value.trim()})});
+  const data=await r.json();if(!r.ok)throw Error(data.error||'Verification failed.');
+  $('otp').value='';await loadProfile();
+ }catch(e){$('notice').textContent=e.message+' Check the latest email, or resend a fresh code when available.';}
+ finally{$('verifyOtp').disabled=false;}
+});
+$('backToMobile').addEventListener('click',()=>{
+ $('otpForm').hidden=true;$('profileForm').hidden=false;$('otp').value='';
+ $('notice').textContent='';
+});
 loadProfile().catch(()=>{});
 for(const id of ['style','headline','callout','cta','designation'])$(id).addEventListener(id==='designation'?'input':'change',art);
 $('photo').addEventListener('change',async(e)=>{const file=e.target.files[0];if(!file)return;if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>8_000_000){$('editorNotice').textContent='Use a JPG, PNG or WebP below 8 MB.';return}const blobUrl=URL.createObjectURL(file);try{photo=await getImage(blobUrl);$('editorNotice').textContent=file.type==='image/png'?'Photo loaded. For clean cut-outs, use a transparent PNG.':'Photo loaded with circular cropping. For background removal, upload a transparent PNG.';art()}finally{URL.revokeObjectURL(blobUrl)}});

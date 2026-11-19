@@ -53,7 +53,7 @@ If `/form` is opened without a `ref` token, or the signed token is expired/inval
 
 1. Add `SMTP_USER` (the Workspace email), `SMTP_PASS` (its Google 16-character App Password; keep secret), `OTP_SIGNING_SECRET` (independent random 32+ character value) and existing `REFERRAL_SIGNING_SECRET` to **Vercel Project → Settings → Environment Variables**. Configure for intended environments, then redeploy.
 2. Gmail SMTP uses `smtp.gmail.com:465` with TLS. Workspace administrators may restrict app passwords; SMTP sending is subject to account quotas. NEVER commit credentials.
-3. Login flow: mobile → `POST /api/request-otp` → six-digit email OTP (10-minute expiry) → `POST /api/verify-otp` → HttpOnly Secure SameSite=Strict session cookie (8 hours) → `GET /api/lookup` returns profile and signed QR referral token. `POST /api/logout` clears the cookies. The code is not displayed on the site or returned by the API.
+3. Login flow: mobile → `POST /api/request-otp` → six-digit email OTP (5-minute expiry) → `POST /api/verify-otp` → HttpOnly Secure SameSite=Strict session cookie (8 hours) → `GET /api/lookup` returns profile and signed QR referral token. `POST /api/logout` clears the cookies. The code is not displayed on the site or returned by the API.
 4. **Critical security limitation:** This is a serverless **stateless** OTP pilot without a database. A valid challenge cookie can potentially be replayed during its lifetime and an instance-local rate limiter cannot enforce global attempt limits across Vercel instances. Configure Vercel Firewall/WAF rate limits on `/api/request-otp` and `/api/verify-otp` and restrict the rollout until you add durable one-time-use counters/rate limiting or an established identity provider. Do not describe this as production-grade single-use OTP.
 5. No email addresses, OTPs or signing secrets are embedded in public JavaScript. Email OTP does not verify that the registered mobile belongs to the caller; it verifies possession of the mapped mailbox. User-provided cookies are authenticated and never trusted without cryptographic verification.
 
@@ -64,7 +64,7 @@ If `/form` is opened without a `ref` token, or the signed token is expired/inval
 2. In Vercel > Project > Settings > Environment Variables, add `SMTP_USER` = full Workspace email, `SMTP_PASS` = the app password (typically entered without spaces), `OTP_SIGNING_SECRET` = fresh randomly generated 32+ character secret, `REFERRAL_SIGNING_SECRET` = a **different** randomly generated 32+ character secret, `REFERRAL_PUBLIC_HOST` = `nbloans-referrals.vercel.app`. Enable for Production (and Preview only if intended).
 3. Redeploy **after** setting environment variables. Vercel deployments capture environment variables at build/deployment time; a previous deployment does not pick up newly added values automatically.
 4. `npm install`, `npm test`, and `vercel dev` locally (Node >=20); on Vercel, deploy through linked GitHub repository or `vercel --prod`. Don't upload `.env` files or private secrets to GitHub.
-5. Open `/vh-only`, enter the mobile of a real pilot roster member who has an authorized email, choose **Email verification code**, check the *associated mailbox*, enter the 6-digit OTP within 10 minutes, and verify the profile and QR load. If nothing arrives, check mailbox spam, Vercel Function logs, and Workspace SMTP restrictions. A generic on-screen response is deliberate, to prevent roster enumeration.
+5. Open `/vh-only`, enter the mobile of a real pilot roster member who has an authorized email, choose **Email verification code**, check the *associated mailbox*, enter the 6-digit OTP within 5 minutes, and verify the profile and QR load. If nothing arrives, check mailbox spam, Vercel Function logs, and Workspace SMTP restrictions. A generic on-screen response is deliberate, to prevent roster enumeration.
 6. On success, an encrypted HttpOnly, Secure, SameSite=Strict session cookie lasts up to 8 hours; profile API requires it. Test logout and an invalid/expired OTP. Do not expect the old `Shiv123` PIN to work.
 7. Put Vercel Firewall rate limits on `/api/request-otp` and `/api/verify-otp` before distributing this to all VHs. Stateless cookies and per-instance limits are **not** strict single-use OTP or global attempt tracking. Durable, cross-instance replay protection requires a persistent store or external auth provider. Do not rely on this pilot for high-assurance authentication.
 8. If the old site says `Referral service not configured`, confirm both 32+ character signing secrets are set on the **correct Vercel project/environment** and redeploy. If email errors arise, confirm `SMTP_USER` / `SMTP_PASS` and look for `OTP delivery error` in the Vercel Function Logs.
@@ -77,3 +77,11 @@ If `/form` is opened without a `ref` token, or the signed token is expired/inval
 - `POST /api/logout` clears both cookies.
 
 **Note:** Email possession is verified; this does not verify that the user's handset owns the typed number. The mapping is server-side, drawn only from the 26 profiles in the `Shivankur` worksheet.
+
+
+### OTP resend and branding (Nov 19 patch)
+- OTP is valid for **5 minutes**; resend is available after a **60-second UI cooldown**.
+- Each successful resend issues a new OTP and invalidates the previous code **in that browser**. If sending fails, the previous OTP cookie is not cleared.
+- The SMTP sender display name is **Marketing @ NoBroker Loans** (the sender address remains `SMTP_USER`). This applies only to emails originating from this application. It does not rename Vercel's own account-security emails.
+- This database-free implementation has **best-effort per-instance** throttling. Before wider rollout add Vercel Firewall / centrally enforced rate limits, replay prevention and audit logging.
+- Test OTP in the same browser and on the same hostname where it was requested. Use the **newest NoBroker Loans verification email**, not a Vercel account-security code.
