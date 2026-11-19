@@ -1,9 +1,53 @@
 {
   "cleanUrls": true,
   "trailingSlash": false,
+  "redirects": [
+    {
+      "source": "/landing",
+      "destination": "/",
+      "permanent": true
+    }
+  ],
   "rewrites": [
-    {"source": "/", "destination": "/index.html"},
-    {"source": "/landing", "destination": "/landing.html"},
-    {"source": "/form", "destination": "/form.html"}
+    {
+      "source": "/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/vh-only",
+      "destination": "/vh-only.html"
+    },
+    {
+      "source": "/form",
+      "destination": "/form.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/form",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive, nosnippet"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        }
+      ]
+    },
+    {
+      "source": "/form.html",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive, nosnippet"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        }
+      ]
+    }
   ]
 }

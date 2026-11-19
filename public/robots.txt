@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /form
+Disallow: /form.html
+Disallow: /api/
+Sitemap: https://nbloans-referrals.vercel.app/sitemap.xml

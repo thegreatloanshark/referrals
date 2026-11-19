@@ -1,9 +1,11 @@
 const form=document.getElementById('referralForm'),message=document.getElementById('formMessage');
+const shell=document.getElementById('formShell'),linkError=document.getElementById('linkError');
+const deny=()=>{shell.hidden=true;form.hidden=true;linkError.hidden=false;};
 const incoming=new URL(location.href);const token=incoming.searchParams.get('ref')||'';
 let config=null;
 (async()=>{
- if(!token){message.textContent='A valid referral link is required.';return;}
- try{const response=await fetch('/api/referral-config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token})});const result=await response.json();if(!response.ok)throw Error('This referral link is invalid or has expired.');config=result;message.textContent='Enter the details below to continue.';form.hidden=false;}catch(e){message.textContent=e.message}
+ if(!token){deny();return;}
+ try{const response=await fetch('/api/referral-config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token})});const result=await response.json();if(!response.ok)throw Error('This referral link is invalid or has expired.');config=result;shell.hidden=false;message.textContent='Enter the details below to continue.';form.hidden=false;}catch(e){deny()}
 })();
 form.addEventListener('submit',event=>{
  event.preventDefault();if(!form.reportValidity())return;
