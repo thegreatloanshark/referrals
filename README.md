@@ -5,13 +5,13 @@
 ## Pages
 
 - `/`: campaign landing page with **Vertical Heads Click Here** CTA.
-- `/vh-only`: VH identification + creative workspace (no naked UTM builder).
+- `/vh-only`: Email OTP login + creative workspace (no naked UTM builder).
 - `/landing`: legacy route permanently redirects to `/`.
 - `/form?ref=<signed-token>`: compact seven-field referral form. Direct `/form` does not display an operable form; an unexpired HMAC token must validate server-side.
 
 ## Source
 
-Only worksheet **Shivankur** from the submitted city allocation support team workbook is imported. The private roster has **26 records**, including 3 `Doubt` and 1 `Exit`, with status preserved. It is stored in `lib/roster.private.json`, used **server-side only**. Never publish `lib` as static assets. Public response exposes only name, mobile and designation. Email and DSA code remain in the private roster; the code is used in signed attribution but not printed on flyers. The workbook lacks designations, so `Vertical Head` is a configurable placeholder, not a verified job title.
+Only worksheet **Shivankur** from the submitted city allocation support team workbook is imported. The private roster has **26 records**, including 3 `Doubt` and 1 `Exit`, with status preserved. It is stored in `lib/roster.private.json`, used **server-side only**. Never publish `lib` as static assets. Authenticated response exposes only name, mobile and designation. Email and DSA code remain in the private roster; the code is used in signed attribution but not printed on flyers. The workbook lacks designations, so `Vertical Head` is a configurable placeholder, not a verified job title.
 
 ## Branded creative generation
 
@@ -24,7 +24,7 @@ Five deterministic design directions from `NoBroker_Loans_Referral_Flyer_Prompts
 ## Configure and deploy
 
 1. Install Node 20+ and Vercel CLI. `npm install` then `vercel dev` (or deploy via your linked Vercel Git project). Node `qrcode` is the only runtime dependency, to render actual high-error-correction SVG QR codes.
-2. Add environment variables from `.env.example` in Vercel project settings. Use a strong independent `REFERRAL_SIGNING_SECRET`. `PILOT_ACCESS_PIN` defaults to `Shiv123` in the example configuration for testing; set it explicitly in Vercel Environment Variables. It is a **shared pilot gate**, **not SMS OTP or identity verification**. For production, connect a real OTP/SSO provider and enforce rate limits against guessing. Do not deploy sensitive data without approved access controls.
+2. Add environment variables from `.env.example` in Vercel project settings. Use a strong independent `REFERRAL_SIGNING_SECRET`. Set `SMTP_USER`, `SMTP_PASS` (Google Workspace App Password), and independent 32+ character `OTP_SIGNING_SECRET`. Shared `Shiv123` pilot PIN is removed. Email OTP is sent to the address in the private roster after mobile lookup. Do not deploy sensitive data without approved access controls.
 3. Configure `REFERRAL_PUBLIC_HOST` to the exact production host. The generator issues a signed 30-day token, with immutable-attribution claims (`DSA code`, `utm_source`, `utm_medium`, `utm_campaign`, `utm_content`) embedded in the token. `GET /api/qr` builds the QR; `/api/referral-config` validates the token again.
 4. Add the authorized Google Form `viewform` prefill URL and all **13** `FORM_ENTRY_*` mappings. These must be actual `entry.12345` IDs discovered from **your** Google Form. The site does not pretend to submit if mapping is missing.
 5. **Important:** Google Forms prefill is *not tamper-proof* and the user may edit tracking in the final Google Form URL. A Google Form cannot enforce signed immutable attribution. For true trusted recording, replace the redirect with a controlled server-side submission to an approved endpoint/Google Apps Script that verifies the token and writes attribution from the verified server payload, never from browser-supplied fields. This integration has deliberately NOT been invented.
@@ -37,7 +37,7 @@ NoBroker Loans is the parent identity; no new sub-brand. Red `#D80000`, white `#
 ## Security and limitations
 
 - HMAC keys are server-only. No Supabase. No personal email or DSA code in the downloaded creative.
-- The sign-in's static shared PIN does not establish ownership of the phone number. Do not treat it as production authentication.
+- Email OTP verifies access to the roster email associated with the entered mobile; it does not verify ownership of the mobile number.
 - Without Google Form mappings there are no accepted submissions. No dashboard/analytics/storage.
 - The source Prompt-To-Pixel Streamlit app used an uncontrolled external image API; it has **not** been executed, copied into the production runtime, or given access to user portraits.
 - Model download and rembg must be separately security reviewed before server deployment.
@@ -48,3 +48,11 @@ NoBroker Loans is the parent identity; no new sub-brand. Red `#D80000`, white `#
 The campaign landing page is `/`, with the CTA **Vertical Heads Click Here** routed to `/vh-only`. The former creative workspace is now `/vh-only`. The referral form has no link in the site navigation and is omitted from the XML sitemap. `robots.txt`, the form meta robots directive, and Vercel `X-Robots-Tag` headers instruct crawlers not to index it. These are indexing signals, **not access controls**.
 
 If `/form` is opened without a `ref` token, or the signed token is expired/invalid, the page shows only **A referral link from a Vertical Head is required to access this page.** No form fields or ordinary site layout appear. Valid signed tokens are verified by the existing server API before the form appears. UTM claims are embedded in the signed token, not accepted merely because user-supplied `utm_*` parameters are present.
+
+## Email OTP deployment (Vercel + Google Workspace)
+
+1. Add `SMTP_USER` (the Workspace email), `SMTP_PASS` (its Google 16-character App Password; keep secret), `OTP_SIGNING_SECRET` (independent random 32+ character value) and existing `REFERRAL_SIGNING_SECRET` to **Vercel Project → Settings → Environment Variables**. Configure for intended environments, then redeploy.
+2. Gmail SMTP uses `smtp.gmail.com:465` with TLS. Workspace administrators may restrict app passwords; SMTP sending is subject to account quotas. NEVER commit credentials.
+3. Login flow: mobile → `POST /api/request-otp` → six-digit email OTP (10-minute expiry) → `POST /api/verify-otp` → HttpOnly Secure SameSite=Strict session cookie (8 hours) → `GET /api/lookup` returns profile and signed QR referral token. `POST /api/logout` clears the cookies. The code is not displayed on the site or returned by the API.
+4. **Critical security limitation:** This is a serverless **stateless** OTP pilot without a database. A valid challenge cookie can potentially be replayed during its lifetime and an instance-local rate limiter cannot enforce global attempt limits across Vercel instances. Configure Vercel Firewall/WAF rate limits on `/api/request-otp` and `/api/verify-otp` and restrict the rollout until you add durable one-time-use counters/rate limiting or an established identity provider. Do not describe this as production-grade single-use OTP.
+5. No email addresses, OTPs or signing secrets are embedded in public JavaScript. Email OTP does not verify that the registered mobile belongs to the caller; it verifies possession of the mapped mailbox. User-provided cookies are authenticated and never trusted without cryptographic verification.
