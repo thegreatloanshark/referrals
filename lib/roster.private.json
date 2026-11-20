@@ -214,5 +214,13 @@
     "dsaCode": "DSA00100002",
     "status": "Active",
     "designation": "Business Director"
+  },
+  {
+    "name": "Marketing",
+    "mobile": "9999900000",
+    "email": "nbloans.marketing@nobroker.in",
+    "dsaCode": "DSA00100003",
+    "status": "Active",
+    "designation": "Test"
   }
 ]
