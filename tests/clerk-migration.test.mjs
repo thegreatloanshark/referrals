@@ -15,6 +15,6 @@ test('Clerk lookup binds server verified user to private roster',()=>{
  assert.doesNotMatch(read('../public/app.js'),/request-otp|verify-otp/);
 });
 test('referral form remains signed-link guarded and sitemap excluded',()=>{
- assert.match(read('../public/form.js'),/referral-config/);
+ assert.match(read('../public/form.js'),/lead-create/);
  assert.doesNotMatch(read('../public/sitemap.xml'),/\/form/);
 });

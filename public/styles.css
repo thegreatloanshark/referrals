@@ -9,3 +9,12 @@
 .clerk-signin { display: flex; justify-content: center; width: 100%; min-width: 0; min-height: 350px; }
 .clerk-signin > * { max-width: 100%; }
 @media(max-width:800px) { .auth-panel { max-width: 560px; width:100%; margin:0 auto; } }
+
+/* Authenticated, minimal referral dashboard */
+.referral-dashboard{grid-column:1/-1;padding:26px 0}
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:12px;margin:20px 0}
+.summary-card{background:#fff;border:1px solid #e8e8e8;border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:9px}
+.summary-card span{font-size:13px;color:#666}.summary-card strong{font-size:27px;color:#D80000}
+.table-wrap{overflow-x:auto}.referral-table{width:100%;border-collapse:collapse;font-size:14px}
+.referral-table th,.referral-table td{padding:12px;text-align:left;border-bottom:1px solid #eee}
+.referral-table th{background:#FFF1F2;color:#333}

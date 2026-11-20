@@ -1,3 +1,4 @@
+import {loadReferralDashboard} from "/dashboard.js";
 import {initializeClerk,clerkFetch} from "/clerk-login.js";
 const HEADLINES=['Refer a Loan Partner. Earn More.','Your Network. Your Next Reward.','Great Connections Deserve Great Rewards.','Grow the Network. Share the Success.','One Referral. A New Opportunity.'];
 const CALLOUTS=['Your network deserves more than recognition.','Know a Loan Partner? Make the introduction count.','One introduction could unlock your next reward.','Turn valuable connections into rewarding opportunities.','Help another Loan Partner grow. Get rewarded.','You bring the connection. We take it forward.'];
@@ -44,7 +45,7 @@ function art(){if(!selected||!token)return;c.clearRect(0,0,W,H);c.fillStyle='#FF
  footer();logoBlock();
 }
 async function loadQR(){if(!token)return;qr=await getImage('/api/qr?token='+encodeURIComponent(token));art()}
-async function loadProfile(){ $('signOut').hidden=false; $('editor').hidden=true; $('profile').hidden=true; $('notice').textContent='Checking Vertical Head access…'; const r=await clerkFetch('/api/lookup');const data=await r.json();if(!r.ok)throw Error(data.error||'Could not retrieve profile.');selected=data.profile;token=data.token;$('profile').hidden=false;$('profile').textContent=`${selected.name} · ${selected.mobile}`;$('editor').hidden=false;$('notice').textContent='';$('clerkSignIn').hidden=true;$('signOut').hidden=false;await loadQR();}
+async function loadProfile(){ $('signOut').hidden=false; $('editor').hidden=true; $('profile').hidden=true; $('notice').textContent='Checking Vertical Head access…'; const r=await clerkFetch('/api/lookup');const data=await r.json();if(!r.ok)throw Error(data.error||'Could not retrieve profile.');selected=data.profile;token=data.token;$('profile').hidden=false;$('profile').textContent=`${selected.name} · ${selected.mobile}`;$('editor').hidden=false;$('notice').textContent='';$('clerkSignIn').hidden=true;$('signOut').hidden=false;await loadQR();await loadReferralDashboard();}
 async function boot(){
  try{
   await initializeClerk($('clerkSignIn'),async()=>{
