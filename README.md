@@ -42,3 +42,6 @@ Clerk's hosted authentication owns OTP delivery, rate controls and sessions. Aut
 
 ## Local tests
 `npm install && npm test` then `vercel dev` with a private `.env` and Clerk development instance. No real emails or Vercel deployment were executed as part of this migration. External Clerk SDK API compatibility must be confirmed against your chosen instance and SDK versions in a running browser.
+
+## V6 UI refinement
+The `/vh-only` login now displays the default Clerk card directly alongside the NoBroker Loans introduction. Removed the duplicate heading and custom bordered/shadowed sign-in wrapper; Clerk handles the entire sign-in UI. No authentication, API, roster, referral, brand asset, or creative-generator logic changed.
