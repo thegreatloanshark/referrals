@@ -1,0 +1,23 @@
+
+name: Debug Vercel Deployment
+
+on:
+  workflow_dispatch:
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
+      - name: Fetch deployment logs
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          vercel logs \
+            --scope thegreatloanshark-projects \
+            --project prj_QDkPB86JeibysaAm2IaXFYcmDnkz \
+            --since 2026-11-20T05:35:00.000Z \
+            --until 2026-11-20T06:05:11.985Z \
+            --token "$VERCEL_TOKEN"
