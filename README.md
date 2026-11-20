@@ -54,3 +54,9 @@ The `/vh-only` login now displays the default Clerk card directly alongside the 
 - Set **Sign-up URL** in your Clerk Dashboard (Development instance) to `https://nbloans-referrals.vercel.app/sign-up` and **Sign-in URL** to `https://nbloans-referrals.vercel.app/vh-only`, where such settings are available. Do not use the Clerk-hosted `accounts.dev` sign-up link.
 - After registration, only emails in the private Shivankur roster can access `/api/lookup` and the creative editor; Clerk sign-up is not in itself VH authorization. For a VH-only pilot, invite/allowlist the 26 emails rather than enabling unrestricted public registrations.
 - This release does not change signed referral token processing, the restricted form, or public landing page.
+
+
+## V8 access-denied UI correction
+A successful Clerk sign-in is not sufficient to use the creative tools. The signed-in Clerk account must have a verified primary email that exactly matches the email of a record in `lib/roster.private.json` (from the Shivankur tab). If lookup returns 403, the site now displays a clear message and a usable **Sign out / switch account** button rather than an empty authenticated page. The roster, signed-link authorization and original Clerk setup remain unchanged. This update does not add a referral dashboard.
+
+If an authorized VH still sees a blank creative section, inspect the request status for `/api/lookup` in Vercel logs. A 403 generally means roster mismatch or verification issue; a 503 points to Clerk backend verification or environment configuration. Never disable the roster check to fix UI appearance.

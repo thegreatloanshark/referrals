@@ -44,12 +44,12 @@ function art(){if(!selected||!token)return;c.clearRect(0,0,W,H);c.fillStyle='#FF
  footer();logoBlock();
 }
 async function loadQR(){if(!token)return;qr=await getImage('/api/qr?token='+encodeURIComponent(token));art()}
-async function loadProfile(){const r=await clerkFetch('/api/lookup');const data=await r.json();if(!r.ok)throw Error(data.error||'Could not retrieve profile.');selected=data.profile;token=data.token;$('profile').hidden=false;$('profile').textContent=`${selected.name} · ${selected.mobile}`;$('editor').hidden=false;$('notice').textContent='';$('clerkSignIn').hidden=true;$('signOut').hidden=false;await loadQR();}
+async function loadProfile(){ $('signOut').hidden=false; $('editor').hidden=true; $('profile').hidden=true; $('notice').textContent='Checking Vertical Head access…'; const r=await clerkFetch('/api/lookup');const data=await r.json();if(!r.ok)throw Error(data.error||'Could not retrieve profile.');selected=data.profile;token=data.token;$('profile').hidden=false;$('profile').textContent=`${selected.name} · ${selected.mobile}`;$('editor').hidden=false;$('notice').textContent='';$('clerkSignIn').hidden=true;$('signOut').hidden=false;await loadQR();}
 async function boot(){
  try{
   await initializeClerk($('clerkSignIn'),async()=>{
    try{await loadProfile();}
-   catch(e){$('notice').textContent=e.message;}
+   catch(e){$('notice').textContent = e.message === 'Sign in with an email registered in the Vertical Head directory.' ? 'This Clerk account is signed in, but its verified email is not in the Vertical Head directory. Sign out and use the email listed for your VH profile.' : e.message; $('signOut').hidden=false; $('editor').hidden=true;}
   });
  }catch(e){$('notice').textContent=e.message;}
 }
