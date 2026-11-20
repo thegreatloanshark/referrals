@@ -45,7 +45,7 @@ function art(){if(!selected||!token)return;c.clearRect(0,0,W,H);c.fillStyle='#FF
  footer();logoBlock();
 }
 async function loadQR(){if(!token)return;qr=await getImage('/api/qr?token='+encodeURIComponent(token));art()}
-async function loadProfile(){ $('signOut').hidden=false; $('editor').hidden=true; $('profile').hidden=true; $('notice').textContent='Checking Vertical Head access…'; const r=await clerkFetch('/api/lookup');const data=await r.json();if(!r.ok)throw Error(data.error||'Could not retrieve profile.');selected=data.profile;token=data.token;$('profile').hidden=false;$('profile').textContent=`${selected.name} · ${selected.mobile}`;$('editor').hidden=false;$('notice').textContent='';$('clerkSignIn').hidden=true;$('signOut').hidden=false;await loadQR();await loadReferralDashboard();}
+async function loadProfile(){ $('signOut').hidden=false; $('editor').hidden=true; $('profile').hidden=true; $('notice').textContent='Checking Vertical Head access…'; const r=await clerkFetch('/api/lookup');const data=await r.json();if(!r.ok)throw Error(data.error||'Could not retrieve profile.');selected=data.profile;token=data.token;$('profile').hidden=false;$('profile').textContent=`${selected.name} · ${selected.mobile}`;$('editor').hidden=false;$('notice').textContent='';$('clerkSignIn').hidden=true;$('signOut').hidden=false;await loadQR();await loadReferralDashboard(selected,token);}
 async function boot(){
  try{
   await initializeClerk($('clerkSignIn'),async()=>{
@@ -57,6 +57,7 @@ async function boot(){
 $('signOut').addEventListener('click',async()=>{
  await window.Clerk.signOut();selected=null;token='';qr=null;
  $('profile').hidden=true;$('editor').hidden=true;$('signOut').hidden=true;
+ $('vhDashboardShell').hidden=true;document.body.classList.remove('vh-active');
  $('notice').textContent='';
  location.assign('/vh-only');
 });

@@ -13,6 +13,9 @@ form.addEventListener('submit',async e=>{
   const values=Object.fromEntries(new FormData(form));
   const response=await fetch('/api/lead-create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...values,ref:token,consent:form.elements.consent.checked})});
   const data=await response.json();if(!response.ok)throw Error(data.error||'Submission failed');
-  form.hidden=true;message.textContent=`Referral submitted successfully. Reference: ${data.leadId}`;
+  form.hidden=true;message.textContent='Thank you for your referral.';document.getElementById('submittedLeadId').textContent=data.leadId||'Recorded';document.getElementById('formSuccess').hidden=false;
  }catch(err){message.textContent=err.message||'Could not submit. Please try again.';button.disabled=false;}
 });
+
+// Repeat submissions use the same validated referral token, but a fresh lead record.
+document.getElementById('referAnother').addEventListener('click',()=>{document.getElementById('formSuccess').hidden=true;form.reset();form.hidden=false;form.querySelector('button[type=submit]').disabled=false;message.textContent='Enter the next Loan Partner’s details below.';form.scrollIntoView({behavior:'smooth',block:'start'});});
