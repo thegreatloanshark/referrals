@@ -1,3 +1,4 @@
+import {initializeClerk,clerkFetch} from "/clerk-login.js";
 const HEADLINES=['Refer a Loan Partner. Earn More.','Your Network. Your Next Reward.','Great Connections Deserve Great Rewards.','Grow the Network. Share the Success.','One Referral. A New Opportunity.'];
 const CALLOUTS=['Your network deserves more than recognition.','Know a Loan Partner? Make the introduction count.','One introduction could unlock your next reward.','Turn valuable connections into rewarding opportunities.','Help another Loan Partner grow. Get rewarded.','You bring the connection. We take it forward.'];
 const CTAS=['Refer Now','Share Your Referral','Start Referring','Refer & Earn','Scan to Refer'];
@@ -43,53 +44,22 @@ function art(){if(!selected||!token)return;c.clearRect(0,0,W,H);c.fillStyle='#FF
  footer();logoBlock();
 }
 async function loadQR(){if(!token)return;qr=await getImage('/api/qr?token='+encodeURIComponent(token));art()}
-async function loadProfile(){const r=await fetch('/api/lookup',{credentials:'same-origin'});const data=await r.json();if(!r.ok)throw Error(data.error||'Could not retrieve profile.');selected=data.profile;token=data.token;$('profile').hidden=false;$('profile').textContent=`${selected.name} · ${selected.mobile}`;$('editor').hidden=false;$('notice').textContent='';$('profileForm').hidden=true;$('otpForm').hidden=true;await loadQR();}
-let otpMobile='', resendUntil=0, resendInterval=null;
-function updateResendButton(){
- const remaining=Math.max(0,Math.ceil((resendUntil-Date.now())/1000));
- const button=$('resendOtp');button.disabled=remaining>0;
- button.textContent=remaining>0?`Resend code in ${remaining}s`:'Resend code';
- if(!remaining&&resendInterval){clearInterval(resendInterval);resendInterval=null;}
-}
-function startResendCooldown(){
- resendUntil=Date.now()+60_000;
- if(resendInterval)clearInterval(resendInterval);
- updateResendButton();resendInterval=setInterval(updateResendButton,1000);
-}
-async function sendOtp(mobile,{resend=false}={}){
- const button=resend?$('resendOtp'):$('sendOtp');
- button.disabled=true;
- $('notice').textContent=resend?'Sending another code…':'Sending verification code…';
+async function loadProfile(){const r=await clerkFetch('/api/lookup');const data=await r.json();if(!r.ok)throw Error(data.error||'Could not retrieve profile.');selected=data.profile;token=data.token;$('profile').hidden=false;$('profile').textContent=`${selected.name} · ${selected.mobile}`;$('editor').hidden=false;$('notice').textContent='';$('clerkSignIn').hidden=true;$('signOut').hidden=false;await loadQR();}
+async function boot(){
  try{
-  const r=await fetch('/api/request-otp',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({mobile})});
-  const data=await r.json();
-  if(!r.ok)throw Error(data.error||'Could not send code.');
-  otpMobile=mobile;$('otp').value='';
-  $('profileForm').hidden=true;$('otpForm').hidden=false;
-  $('notice').textContent='If your mobile number is registered, a six-digit code has been sent to its associated email address. Check Spam as well. The code expires in 5 minutes.';
-  startResendCooldown();
- }catch(e){$('notice').textContent=e.message+(resend?' Your previous code may still work until it expires.':'');}
- finally{if(!resend)button.disabled=false;else updateResendButton();}
+  await initializeClerk($('clerkSignIn'),async()=>{
+   try{await loadProfile();}
+   catch(e){$('notice').textContent=e.message;}
+  });
+ }catch(e){$('notice').textContent=e.message;}
 }
-$('profileForm').addEventListener('submit',async ev=>{ev.preventDefault();await sendOtp($('mobile').value.replace(/\D/g,''));});
-$('resendOtp').addEventListener('click',async()=>{
- if(Date.now()<resendUntil)return;
- await sendOtp(otpMobile,{resend:true});
-});
-$('otpForm').addEventListener('submit',async ev=>{
- ev.preventDefault();$('verifyOtp').disabled=true;$('notice').textContent='Verifying…';
- try{
-  const r=await fetch('/api/verify-otp',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:$('otp').value.trim()})});
-  const data=await r.json();if(!r.ok)throw Error(data.error||'Verification failed.');
-  $('otp').value='';await loadProfile();
- }catch(e){$('notice').textContent=e.message+' Check the latest email, or resend a fresh code when available.';}
- finally{$('verifyOtp').disabled=false;}
-});
-$('backToMobile').addEventListener('click',()=>{
- $('otpForm').hidden=true;$('profileForm').hidden=false;$('otp').value='';
+$('signOut').addEventListener('click',async()=>{
+ await window.Clerk.signOut();selected=null;token='';qr=null;
+ $('profile').hidden=true;$('editor').hidden=true;$('signOut').hidden=true;
  $('notice').textContent='';
+ location.assign('/vh-only');
 });
-loadProfile().catch(()=>{});
+void boot();
 for(const id of ['style','headline','callout','cta','designation'])$(id).addEventListener(id==='designation'?'input':'change',art);
 $('photo').addEventListener('change',async(e)=>{const file=e.target.files[0];if(!file)return;if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>8_000_000){$('editorNotice').textContent='Use a JPG, PNG or WebP below 8 MB.';return}const blobUrl=URL.createObjectURL(file);try{photo=await getImage(blobUrl);$('editorNotice').textContent=file.type==='image/png'?'Photo loaded. For clean cut-outs, use a transparent PNG.':'Photo loaded with circular cropping. For background removal, upload a transparent PNG.';art()}finally{URL.revokeObjectURL(blobUrl)}});
 $('shuffle').addEventListener('click',()=>{for(const id of ['style','headline','callout','cta']){const el=$(id);el.selectedIndex=Math.floor(Math.random()*el.options.length)}art()});
