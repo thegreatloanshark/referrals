@@ -204,7 +204,15 @@
     "mobile": "9945048798",
     "email": "shivankur.ghosh@nobroker.in",
     "dsaCode": "DSA00100001",
-    "status": "",
+    "status": "Active",
     "designation": "Vertical Head"
-  }
+  },
+  {
+    "name": "Adityaman",
+    "mobile": "9508550746",
+    "email": "adityaman.patra@nobroker.in",
+    "dsaCode": "DSA00100002",
+    "status": "Active",
+    "designation": "Business Director"
+  },
 ]
