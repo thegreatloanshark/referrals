@@ -17,6 +17,12 @@ export async function initializeClerk(node, onSession){
   await addScript(`https://${domain}/npm/@clerk/ui@1/dist/ui.browser.js`);
   await addScript(`https://${domain}/npm/@clerk/clerk-js@6/dist/clerk.browser.js`,{'data-clerk-publishable-key':key});
   await window.Clerk.load({
+    signInUrl: '/vh-only',
+    signUpUrl: '/sign-up',
+    signInFallbackRedirectUrl: '/vh-only',
+    signUpFallbackRedirectUrl: '/vh-only',
+    signInForceRedirectUrl: '/vh-only',
+    signUpForceRedirectUrl: '/vh-only',
     ui: { ClerkUI: window.__internal_ClerkUICtor },
     appearance: {
       variables: {
@@ -44,7 +50,7 @@ export async function initializeClerk(node, onSession){
       if(sessionId!==lastSessionId){lastSessionId=sessionId;await onSession();}
     }else{
       lastSessionId=null;node.hidden=false;document.getElementById('authPanel').hidden=false;
-      if(!signInMounted){clerk.mountSignIn(node,{routing:'hash',signUpUrl:'/sign-up',signUpFallbackRedirectUrl:'/vh-only',appearance:{variables:{colorPrimary:'#D80000',borderRadius:'10px'},options:{logoImageUrl:`${location.origin}/assets/nbl-logo.png`,logoLinkUrl:`${location.origin}/`}}});signInMounted=true;}
+      if(!signInMounted){clerk.mountSignIn(node,{routing:'hash',signUpUrl:'/sign-up',forceRedirectUrl:'/vh-only',fallbackRedirectUrl:'/vh-only',signInForceRedirectUrl:'/vh-only',signInFallbackRedirectUrl:'/vh-only',signUpFallbackRedirectUrl:'/vh-only',appearance:{variables:{colorPrimary:'#D80000',borderRadius:'10px'},options:{logoImageUrl:`${location.origin}/assets/nbl-logo.png`,logoLinkUrl:`${location.origin}/`}}});signInMounted=true;}
     }
   };
   clerk.addListener(({user,session})=>{void refresh().catch(e=>console.error(e));});
@@ -61,6 +67,12 @@ export async function initializeClerkSignUp(node){
   await addScript(`https://${domain}/npm/@clerk/ui@1/dist/ui.browser.js`);
   await addScript(`https://${domain}/npm/@clerk/clerk-js@6/dist/clerk.browser.js`,{'data-clerk-publishable-key':key});
   await window.Clerk.load({
+    signInUrl: '/vh-only',
+    signUpUrl: '/sign-up',
+    signInFallbackRedirectUrl: '/vh-only',
+    signUpFallbackRedirectUrl: '/vh-only',
+    signInForceRedirectUrl: '/vh-only',
+    signUpForceRedirectUrl: '/vh-only',
     ui:{ClerkUI:window.__internal_ClerkUICtor},
     appearance:{
       variables:{colorPrimary:'#D80000',colorForeground:'#191919',colorBackground:'#FFFFFF',colorInputBackground:'#FFFFFF',colorInputForeground:'#191919',colorPrimaryForeground:'#FFFFFF',borderRadius:'10px',fontFamily:'Arimo, Arial, sans-serif'},
@@ -70,6 +82,8 @@ export async function initializeClerkSignUp(node){
   if(window.Clerk.user){location.replace('/vh-only');return;}
   window.Clerk.mountSignUp(node,{
     routing:'hash',
+    forceRedirectUrl:'/vh-only',
+    fallbackRedirectUrl:'/vh-only',
     signInUrl:'/vh-only',
     signInFallbackRedirectUrl:'/vh-only',
     signUpFallbackRedirectUrl:'/vh-only',
