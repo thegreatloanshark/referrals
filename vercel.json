@@ -20,6 +20,10 @@
     {
       "source": "/form",
       "destination": "/form.html"
+    },
+    {
+      "source": "/sign-up",
+      "destination": "/sign-up.html"
     }
   ],
   "headers": [

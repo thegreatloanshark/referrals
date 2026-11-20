@@ -45,3 +45,12 @@ Clerk's hosted authentication owns OTP delivery, rate controls and sessions. Aut
 
 ## V6 UI refinement
 The `/vh-only` login now displays the default Clerk card directly alongside the NoBroker Loans introduction. Removed the duplicate heading and custom bordered/shadowed sign-in wrapper; Clerk handles the entire sign-in UI. No authentication, API, roster, referral, brand asset, or creative-generator logic changed.
+
+## V7: On-site Clerk sign-up
+
+- `/vh-only`: existing branded Clerk sign-in with `signUpUrl: '/sign-up'`.
+- `/sign-up`: native Clerk sign-up card rendered directly on the NoBroker Loans domain, linked back to `/vh-only`.
+- Clerk sign-in/sign-up routing uses hash mode to support static Vercel rewrites.
+- Set **Sign-up URL** in your Clerk Dashboard (Development instance) to `https://nbloans-referrals.vercel.app/sign-up` and **Sign-in URL** to `https://nbloans-referrals.vercel.app/vh-only`, where such settings are available. Do not use the Clerk-hosted `accounts.dev` sign-up link.
+- After registration, only emails in the private Shivankur roster can access `/api/lookup` and the creative editor; Clerk sign-up is not in itself VH authorization. For a VH-only pilot, invite/allowlist the 26 emails rather than enabling unrestricted public registrations.
+- This release does not change signed referral token processing, the restricted form, or public landing page.
