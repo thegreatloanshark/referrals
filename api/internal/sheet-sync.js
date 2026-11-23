@@ -1,5 +1,6 @@
 import {db,sqlStagePatch} from '../../lib/supabase-server.js';
 import {json,secureCompare} from '../../lib/security.js';
+import {numericAmount} from '../../lib/lead-quality.js';
 const max=100;
 const txt=x=>typeof x==='string'?x.trim():'';
 function authorized(req){const secret=process.env.SHEET_SYNC_SECRET;const got=String(req.headers['x-sync-secret']||'');return secret?.length>=32 && got && secureCompare(got,secret)}
@@ -26,10 +27,17 @@ export default async function handler(req,res){
     if(!/^[a-f0-9-]{36}$/i.test(id))return json(res,400,{error:'Invalid lead ID'});
     const flags=req.body.stageFlags||{},extra=req.body.sheetExtra||{};
     if(typeof flags!=='object'||Array.isArray(flags)||typeof extra!=='object'||Array.isArray(extra))return json(res,400,{error:'Invalid fields'});
-    const safeFlags={};for(const [k,v] of Object.entries(flags)){if(k==='lead_created')continue;if(!/^[a-z][a-z0-9_]{0,63}$/.test(k)||typeof v!=='boolean')return json(res,400,{error:'Invalid stage'});safeFlags[k]=v;}
+    const safeFlags={};for(const [k,v] of Object.entries(flags)){if(k==='lead_created'||k==='qualified')continue;if(!/^[a-z][a-z0-9_]{0,63}$/.test(k)||typeof v!=='boolean')return json(res,400,{error:'Invalid stage'});safeFlags[k]=v;}
     const safeExtra={};for(const [k,v] of Object.entries(extra)){if(!/^[a-z][a-z0-9_]{0,63}$/.test(k)||!['string','number','boolean'].includes(typeof v))return json(res,400,{error:'Invalid extra column'});safeExtra[k]=String(v).slice(0,500);}
     if(Object.keys(safeFlags).length>40||Object.keys(safeExtra).length>50)return json(res,400,{error:'Too many columns'});
-    const changed=await sqlStagePatch(id,safeFlags,safeExtra);
+    // The Sheet is an operator-only control plane. Validate the disbursement
+    // amount as numeric rupees, not a display band or an arbitrary free text.
+    let amount;
+    if(Object.hasOwn(req.body,'firstFileAmount')){
+      try { amount=numericAmount(req.body.firstFileAmount); }
+      catch(e){return json(res,400,{error:e.message});}
+    }
+    const changed=await sqlStagePatch(id,safeFlags,safeExtra,amount);
     return json(res,200,{ok:true,changed});
   }
   return json(res,400,{error:'Unknown action'});

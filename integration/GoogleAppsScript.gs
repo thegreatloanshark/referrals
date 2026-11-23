@@ -6,9 +6,9 @@
  *   SPREADSHEET_ID = 1yDQR7YRp5ehGxUyyla34CVLyeArsMXjZ4H7PWzc_Kbg
  * This script cannot bypass Workspace permissions.
  */
-const FIXED = ['Lead ID','Created At','DSA Code','VH Name','Referrer Name','Referrer Mobile','Referrer Email','Referrer City','Referred Name','Referred Mobile','Referred Email','UTM Source','UTM Medium','UTM Campaign','UTM Content','UTM Term','Lead Created','Qualified','Onboarded','Business Started','Last Updated'];
-const NON_STAGE = new Set(FIXED.slice(0,16).concat(['Last Updated']));
-const STAGES = {'Lead Created':'lead_created','Qualified':'qualified','Onboarded':'onboarded','Business Started':'business_started'};
+const FIXED = ['Lead ID','Created At','DSA Code','VH Name','Referrer Name','Referrer Mobile','Referrer Email','Referrer City','Referred Name','Referred Mobile','Referred Email','UTM Source','UTM Medium','UTM Campaign','UTM Content','UTM Term','Lead Created','Qualified (Legacy)','Lead Onboarded','Business Started','Last Updated','Duplicate Label','Original Lead ID','Referral Payout Generated','First File Amount (INR)'];
+const NON_STAGE = new Set(FIXED.slice(0,16).concat(['Qualified (Legacy)','Last Updated','Duplicate Label','Original Lead ID','Referral Payout Generated','First File Amount (INR)']));
+const STAGES = {'Lead Created':'lead_created','Lead Onboarded':'onboarded','Business Started':'business_started'};
 function prop(name){const value=PropertiesService.getScriptProperties().getProperty(name);if(!value)throw new Error('Set Script Property: '+name);return value;}
 function api(action,payload){
  const base=prop('REFERRAL_API_BASE').replace(/\/$/,'');
@@ -35,7 +35,10 @@ function baseRow(lead,headers){const a=lead.form_answers||{};const map={
  'Referrer Name':a.referrerName,'Referrer Mobile':a.referrerMobile,'Referrer Email':a.referrerEmail,'Referrer City':a.referrerCity,
  'Referred Name':a.referredName,'Referred Mobile':a.referredMobile,'Referred Email':a.referredEmail,
  'UTM Source':lead.utm_source,'UTM Medium':lead.utm_medium,'UTM Campaign':lead.utm_campaign,
- 'UTM Content':lead.utm_content,'UTM Term':lead.utm_term,'Lead Created':'Yes','Last Updated':lead.updated_at
+ 'UTM Content':lead.utm_content,'UTM Term':lead.utm_term,'Lead Created':'Yes','Last Updated':lead.updated_at,
+ 'Duplicate Label':lead.duplicate_label||'New','Original Lead ID':lead.original_lead_id||'',
+ 'Referral Payout Generated':lead.referral_payout_generated||'Pending',
+ 'First File Amount (INR)':lead.first_file_amount==null?'':String(lead.first_file_amount)
  };
  return headers.map(h=>Object.hasOwn(map,h)?safeCell(map[h]):(lead.stage_flags&&Object.hasOwn(lead.stage_flags,STAGES[h]||slug(h)) ? (lead.stage_flags[STAGES[h]||slug(h)]?'Yes':'No') : safeCell(lead.sheet_extra?.[slug(h)]||'')));
 }
@@ -49,9 +52,15 @@ function readSheetEdits(sh,headers){
      const raw=String(row[i]||'').trim();if(!raw)return;
      const key=STAGES[h]||slug(h);if(!key)return;
      if(/^(yes|no|true|false)$/i.test(raw))flags[key]=/^(yes|true)$/i.test(raw);
-     else if(!['Qualified','Onboarded','Business Started'].includes(h))extra[key]=raw.slice(0,500);
+     else if(!['Lead Onboarded','Business Started'].includes(h))extra[key]=raw.slice(0,500);
    });
-   const data={stageFlags:flags,sheetExtra:extra};const hash=fingerprint(data);
+   // Human input to First File Amount is validated by the Vercel endpoint.
+   // Empty means not entered, not zero; preserve the previous value.
+   const amountColumn=headers.indexOf('First File Amount (INR)');
+   const amount=amountColumn>=0?String(row[amountColumn]||'').trim().replace(/,/g,''):'';
+   const data={stageFlags:flags,sheetExtra:extra};
+   if(amount)data.firstFileAmount=amount;
+   const hash=fingerprint(data);
    const propertyKey='stage_'+id; if(props.getProperty(propertyKey)===hash)continue;
    api('update',{leadId:id,...data});props.setProperty(propertyKey,hash);
  }
@@ -69,6 +78,8 @@ function writePending(sh,headers){
    sh.getRange(row,1,1,16).setValues([values.slice(0,16)]);
    sh.getRange(row,17).setValue('Yes');
    sh.getRange(row,21).setValue(values[20]);
+   // Server-owned duplicate classification. Never overwrite human-entered amount.
+   sh.getRange(row,22,1,3).setValues([values.slice(21,24)]);
   }else{
    const row=sh.getLastRow()+1;sh.getRange(row,1,1,headers.length).setValues([values]);index.set(lead.id,row);
   }

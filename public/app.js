@@ -1,11 +1,11 @@
-import {loadReferralDashboard} from "/dashboard.js";
+import {loadReferralDashboard,mirrorFlyerPreview} from "/dashboard.js";
 import {initializeClerk,clerkFetch} from "/clerk-login.js";
 const HEADLINES=['Refer a Loan Partner. Earn More.','Your Network. Your Next Reward.','Great Connections Deserve Great Rewards.','Grow the Network. Share the Success.','One Referral. A New Opportunity.'];
 const CALLOUTS=['Your network deserves more than recognition.','Know a Loan Partner? Make the introduction count.','One introduction could unlock your next reward.','Turn valuable connections into rewarding opportunities.','Help another Loan Partner grow. Get rewarded.','You bring the connection. We take it forward.'];
 const CTAS=['Refer Now','Share Your Referral','Start Referring','Refer & Earn','Scan to Refer'];
 const $=id=>document.getElementById(id);const canvas=$('flyer'),c=canvas.getContext('2d');
 const W=1200,H=1500,RED='#D80000',INK='#181818',SOFT='#FFF1F2',GOLD='#FFD700';
-let selected=null,token='',photo=null,qr=null,logo=null;
+let selected=null,token='',shortReferralPath='',photo=null,qr=null,logo=null;
 for(const [id,items] of [['headline',HEADLINES],['callout',CALLOUTS],['cta',CTAS]]){$(id).innerHTML=items.map((t,i)=>`<option value="${i}">${t.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</option>`).join('')}
 const getImage=src=>new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=reject;img.src=src});
 async function fetchLogo(){try{logo=await getImage('/assets/nbl-logo.png')}catch{logo=null}}
@@ -23,7 +23,7 @@ function photoCircle(x,y,r){
  rounded(x-r-13,y-r-13,2*r+26,2*r+26,r+13,SOFT);
  c.save();c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.clip();if(photo){const scale=Math.max(2*r/photo.width,2*r/photo.height);const iw=photo.width*scale,ih=photo.height*scale;c.drawImage(photo,x-iw/2,y-ih/2,iw,ih)}else{rounded(x-r,y-r,2*r,2*r,r,'#FFF');c.strokeStyle='#F3D4D7';c.lineWidth=4;c.beginPath();c.arc(x,y,r-7,0,Math.PI*2);c.stroke()}c.restore();
 }
-function qrCode(x,y,size=240){rounded(x-13,y-13,size+26,size+26,13,'#FFF');if(qr)c.drawImage(qr,x,y,size,size);else{c.strokeStyle='#ddd';c.strokeRect(x,y,size,size)}}
+function qrCode(x,y,size=240){rounded(x-10,y-10,size+20,size+20,5,'#FFF');if(qr){c.save();c.imageSmoothingEnabled=false;c.drawImage(qr,x,y,size,size);c.restore();}else{c.strokeStyle='#ddd';c.strokeRect(x,y,size,size)}}
 function identity(x,y,color=INK,align='left'){const n=selected?.name||'';text(n,x,y,35,color,800,590,align);text(($('designation').value||'Vertical Head').slice(0,60),x,y+36,22,color,400,590,align)}
 function footer(){rounded(0,1402,W,98,0,'#fff');c.fillStyle='#E7E7E7';c.fillRect(65,1401,1070,1);text('Home Loan ≥ ₹30 lakh · First qualifying file · T&Cs apply',65,1451,21,'#666',400,1040);}
 function logoBlock(){rounded(40,30,380,120,12,'#fff');if(logo){const scale=Math.min(330/logo.width,95/logo.height);c.drawImage(logo,62,42,logo.width*scale,logo.height*scale)}else{text('NoBroker Loans',63,98,42,INK,800);}}
@@ -31,21 +31,21 @@ function ctaBlock(s,x,y,width=430){rounded(x,y,width,72,15,RED);text(s.toUpperCa
 function art(){if(!selected||!token)return;c.clearRect(0,0,W,H);c.fillStyle='#FFF';c.fillRect(0,0,W,H);const hero=HEADLINES[+$('headline').value],callout=CALLOUTS[+$('callout').value],cta=CTAS[+$('cta').value],mode=$('style').value;
  if(mode==='geometric'){
   c.fillStyle=RED;c.beginPath();c.moveTo(740,0);c.lineTo(1200,0);c.lineTo(1200,850);c.lineTo(970,1050);c.closePath();c.fill();c.fillStyle='#FFD700';c.beginPath();c.arc(1070,370,73,0,Math.PI*2);c.fill();
-  paragraph(hero,70,260,670,69,1.06,INK,800,4);paragraph(callout,70,540,620,32,1.22,'#555',500,3);photoCircle(935,720,230);identity(70,785);rewards(70,855,710);ctaBlock(cta,70,1078,440);qrCode(865,1110,220);text('SCAN TO REFER',975,1373,20,INK,800,220,'center');
+  paragraph(hero,70,260,670,69,1.06,INK,800,4);paragraph(callout,70,540,620,32,1.22,'#555',500,3);photoCircle(935,720,230);identity(70,785);rewards(70,855,710);ctaBlock(cta,70,1078,440);qrCode(812,1014,352);text('SCAN TO REFER',981,1390,20,INK,800,220,'center');
  }else if(mode==='identity'){
-  rounded(40,165,1120,1040,42,SOFT);rounded(65,185,1070,680,34,'#fff');paragraph(hero,95,270,980,62,1.1,INK,800,3);photoCircle(600,640,225);identity(600,918,INK,'center');paragraph(callout,90,1025,670,29,1.18,INK,500,3);rewards(70,1140,720);qrCode(925,1115,195);ctaBlock(cta,72,1330,470);
+  rounded(40,165,1120,1040,42,SOFT);rounded(65,185,1070,680,34,'#fff');paragraph(hero,95,270,980,62,1.1,INK,800,3);photoCircle(600,640,225);identity(600,918,INK,'center');paragraph(callout,90,1025,670,29,1.18,INK,500,3);rewards(70,1140,720);qrCode(790,995,370);ctaBlock(cta,72,1330,470);
  }else if(mode==='qr'){
-  rounded(0,165,1200,165,0,RED);paragraph(hero,68,250,1090,62,1.1,'#fff',800,2);photoCircle(310,605,195);identity(595,575);paragraph(callout,595,695,540,31,1.24,'#444',500,3);rewards(70,850,720);qrCode(848,810,265);text('SCAN TO REFER',980,1130,25,RED,800,250,'center');ctaBlock(cta,70,1110,630);
+  rounded(0,165,1200,165,0,RED);paragraph(hero,68,250,1090,62,1.1,'#fff',800,2);photoCircle(310,605,195);identity(595,575);paragraph(callout,595,695,540,31,1.24,'#444',500,3);rewards(70,850,720);qrCode(790,740,380);text('SCAN TO REFER',977,1150,25,RED,800,250,'center');ctaBlock(cta,70,1110,630);
  }else if(mode==='split'){
   c.fillStyle=RED;c.beginPath();c.moveTo(0,0);c.lineTo(650,0);c.lineTo(560,1400);c.lineTo(0,1400);c.fill();photoCircle(310,760,230);identity(300,1070,'#fff','center');
-  paragraph(hero,645,265,500,58,1.13,INK,800,4);paragraph(callout,650,565,500,30,1.22,'#555',500,4);rewards(620,780,515);qrCode(860,1040,230);ctaBlock(cta,628,1310,500); 
+  paragraph(hero,645,265,500,58,1.13,INK,800,4);paragraph(callout,650,565,500,30,1.22,'#555',500,4);rewards(620,745,515);qrCode(782,915,380);ctaBlock(cta,628,1310,500); 
  }else{
-  c.fillStyle=RED;c.fillRect(0,166,1200,16);paragraph(hero,85,285,1050,70,1.1,INK,800,3);paragraph(callout,85,500,970,31,1.24,'#666',500,3);photoCircle(350,855,228);identity(700,825);rewards(650,910,490);qrCode(165,1120,210);ctaBlock(cta,650,1225,480);
+  c.fillStyle=RED;c.fillRect(0,166,1200,16);paragraph(hero,85,285,1050,70,1.1,INK,800,3);paragraph(callout,85,500,970,31,1.24,'#666',500,3);photoCircle(350,770,205);identity(700,825);rewards(650,910,490);qrCode(95,1015,370);ctaBlock(cta,650,1225,480);
  }
- footer();logoBlock();
+ footer();logoBlock();mirrorFlyerPreview();
 }
-async function loadQR(){if(!token)return;qr=await getImage('/api/qr?token='+encodeURIComponent(token));art()}
-async function loadProfile(){ $('signOut').hidden=false; $('editor').hidden=true; $('profile').hidden=true; $('notice').textContent='Checking Vertical Head access…'; const r=await clerkFetch('/api/lookup');const data=await r.json();if(!r.ok)throw Error(data.error||'Could not retrieve profile.');selected=data.profile;token=data.token;$('profile').hidden=false;$('profile').textContent=`${selected.name} · ${selected.mobile}`;$('editor').hidden=false;$('notice').textContent='';$('clerkSignIn').hidden=true;$('signOut').hidden=false;await loadQR();await loadReferralDashboard(selected,token);}
+async function loadQR(){if(!token)return;qr=await getImage('/api/qr?format=png&token='+encodeURIComponent(token));art()}
+async function loadProfile(){ $('signOut').hidden=false; $('editor').hidden=true; $('profile').hidden=true; $('notice').textContent='Checking Vertical Head access…'; const r=await clerkFetch('/api/lookup');const data=await r.json();if(!r.ok)throw Error(data.error||'Could not retrieve profile.');selected=data.profile;token=data.token;shortReferralPath=data.shortReferralPath||'';$('profile').hidden=false;$('profile').textContent=`${selected.name} · ${selected.mobile}`;$('editor').hidden=false;$('notice').textContent='';$('clerkSignIn').hidden=true;$('signOut').hidden=false;await loadQR();await loadReferralDashboard(selected,token,shortReferralPath);}
 async function boot(){
  try{
   await initializeClerk($('clerkSignIn'),async()=>{
@@ -55,7 +55,7 @@ async function boot(){
  }catch(e){$('notice').textContent=e.message;}
 }
 $('signOut').addEventListener('click',async()=>{
- await window.Clerk.signOut();selected=null;token='';qr=null;
+ await window.Clerk.signOut();selected=null;token='';shortReferralPath='';qr=null;
  $('profile').hidden=true;$('editor').hidden=true;$('signOut').hidden=true;
  $('vhDashboardShell').hidden=true;document.body.classList.remove('vh-active');
  $('notice').textContent='';
@@ -68,5 +68,5 @@ $('shuffle').addEventListener('click',()=>{for(const id of ['style','headline','
 function save(href,name){const a=document.createElement('a');a.href=href;a.download=name;document.body.appendChild(a);a.click();a.remove()}
 $('download').addEventListener('click',()=>{if(token){art();save(canvas.toDataURL('image/png'),`NoBroker-Loans-Referral-${selected.name.replace(/[^a-z0-9]/gi,'-')}.png`)}});
 $('qrdownload').addEventListener('click',()=>{if(token)save('/api/qr?token='+encodeURIComponent(token),'NoBroker-Loans-Referral-QR.svg')});
-$('copy').addEventListener('click',async()=>{if(!token)return;await navigator.clipboard.writeText(`${location.origin}/form?ref=${encodeURIComponent(token)}`);$('editorNotice').textContent='Referral link copied.'});
+$('copy').addEventListener('click',async()=>{if(!token)return;await navigator.clipboard.writeText(shortReferralPath?`${location.origin}${shortReferralPath}`:`${location.origin}/form?ref=${encodeURIComponent(token)}`);$('editorNotice').textContent='Referral link copied.'});
 fetchLogo().then(art);

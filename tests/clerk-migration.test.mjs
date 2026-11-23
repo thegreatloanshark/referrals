@@ -11,7 +11,7 @@ test('Clerk lookup binds server verified user to private roster',()=>{
  const auth=read('../lib/clerk-auth.js');
  assert.match(auth,/authenticateRequest/);assert.match(auth,/users.getUser/);
  assert.match(auth,/verification\?\.status === 'verified'/);
- assert.match(auth,/roster.find/);
+ assert.match(auth,/roster.filter/); assert.match(auth,/verifiedEmails/);
  assert.doesNotMatch(read('../public/app.js'),/request-otp|verify-otp/);
 });
 test('referral form remains signed-link guarded and sitemap excluded',()=>{
