@@ -217,10 +217,18 @@
   },
   {
     "name": "Marketing",
-    "mobile": "9999900000",
+    "mobile": "9900179431",
     "email": "nbloans.marketing@nobroker.in",
     "dsaCode": "DSA00100003",
     "status": "Active",
     "designation": "Test"
+  },
+  {
+    "name": "Asad",
+    "mobile": "8982323898",
+    "email": "asad.s@nobroker.in",
+    "dsaCode": "DSA00100004",
+    "status": "",
+    "designation": "Vertical Head"
   }
 ]
