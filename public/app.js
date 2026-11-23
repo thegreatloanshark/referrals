@@ -14,11 +14,12 @@ function wrap(t,maxWidth,size=38,weight=700){c.font=`${weight} ${size}px Arimo, 
 function paragraph(t,x,y,width,size=40,lineHeight=1.16,color=INK,weight=700,maxLines=4){const lines=wrap(t,width,size,weight).slice(0,maxLines);lines.forEach((line,i)=>text(line,x,y+i*size*lineHeight,size,color,weight,width));return y+lines.length*size*lineHeight}
 function rounded(x,y,w,h,r,color){c.fillStyle=color;c.beginPath();c.roundRect(x,y,w,h,r);c.fill()}
 function rewards(x,y,width=840,variant='normal'){
- const half=(width-14)/2;rounded(x,y,half,158,19,variant==='red'?'#B80000':SOFT);rounded(x+half+14,y,half,158,19,variant==='red'?'#B80000':SOFT);
+ rounded(x,y,width,158,19,variant==='red'?'#B80000':SOFT);
  const color=variant==='red'?'#fff':RED, label=variant==='red'?'#fff':INK;
- text('PSU BANK',x+22,y+45,25,label,700);text('₹5,000',x+22,y+116,61,color,800);
- text('PRIVATE BANK',x+half+36,y+45,25,label,700);text('₹7,000',x+half+36,y+116,61,color,800);
+ text('FLAT REFERRAL REWARD · ALL ELIGIBLE BANKS',x+22,y+43,Math.min(22,width/24),label,700,width-44);
+ text('₹5,000',x+22,y+115,Math.min(63,width/7.7),color,800,width-44);
 }
+
 function photoCircle(x,y,r){
  rounded(x-r-13,y-r-13,2*r+26,2*r+26,r+13,SOFT);
  c.save();c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.clip();if(photo){const scale=Math.max(2*r/photo.width,2*r/photo.height);const iw=photo.width*scale,ih=photo.height*scale;c.drawImage(photo,x-iw/2,y-ih/2,iw,ih)}else{rounded(x-r,y-r,2*r,2*r,r,'#FFF');c.strokeStyle='#F3D4D7';c.lineWidth=4;c.beginPath();c.arc(x,y,r-7,0,Math.PI*2);c.stroke()}c.restore();

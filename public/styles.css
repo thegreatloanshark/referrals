@@ -92,3 +92,12 @@ body.vh-active .vh-main{min-width:0}
 .vh-hero-preview canvas{box-shadow:0 6px 24px #0001}
 .vh-sidebar-toggle:focus-visible{outline:3px solid #d80000;outline-offset:2px}
 @media(min-width:781px){.vh-performance .vh-stats{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+/* V13 hotfix: one flat reward; aligned homepage call-to-action */
+.landing .rewards{grid-template-columns:minmax(0,1fr);max-width:640px}
+.landing .rewards>div{padding:26px 30px}
+.landing .rewards small{font-size:13px;color:#5d4a4d;margin-top:6px}
+.landing-cta{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-top:26px;max-width:740px}
+.landing-cta>span{font-size:14px;color:#555;flex:1}
+.landing-cta>.btn{white-space:nowrap;flex-shrink:0}
+@media(max-width:570px){.landing-cta{flex-direction:column;align-items:stretch;gap:12px}.landing-cta>.btn{width:100%}}
