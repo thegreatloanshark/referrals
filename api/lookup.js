@@ -1,4 +1,4 @@
-import {authorizedProfile} from '../lib/clerk-auth.js';
+import {resolveAuthorizedProfile} from '../lib/clerk-auth.js';
 import {issueToken,easyQrSlug,json,restrictOrigin} from '../lib/security.js';
 export default async function handler(req,res){
  if(req.method!=='GET')return json(res,405,{error:'Method not allowed'});

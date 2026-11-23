@@ -10,7 +10,7 @@ test('Marketing is in 28-record approved roster and matched only by verified Cle
  assert.equal(roster.length,28);
  assert.deepEqual(roster.filter(x=>x.email==='nbloans.marketing@nobroker.in').map(x=>x.dsaCode),['DSA00100003']);
  assert.match(read('lib/clerk-auth.js'),/verification\?\.status === 'verified'/);
- assert.match(read('lib/clerk-auth.js'),/matched.length !== 1/);
+ assert.match(read('lib/clerk-auth.js'),/matches.length>1/);
 });
 test('five exact first-file grading bands, never cumulative',()=>{
  for(const [amount,band,grade] of [[3125200,'₹30L+','B'],[5000000,'₹50L+','B+'],[8000000,'₹80L+','A'],[11525000,'₹1Cr+','AA'],[15000000,'₹1.5Cr+','AAA']])assert.deepEqual(qualityFor(amount),{band,grade});

@@ -50,7 +50,7 @@ async function boot(){
  try{
   await initializeClerk($('clerkSignIn'),async()=>{
    try{await loadProfile();}
-   catch(e){$('notice').textContent = e.message === 'Sign in with an email registered in the Vertical Head directory.' ? 'This Clerk account is signed in, but its verified email is not in the Vertical Head directory. Sign out and use the email listed for your VH profile.' : e.message; $('signOut').hidden=false; $('editor').hidden=true;}
+   catch(e){$('notice').textContent=e.message; $('signOut').hidden=false; $('editor').hidden=true;}
   });
  }catch(e){$('notice').textContent=e.message;}
 }
