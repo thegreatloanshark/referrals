@@ -101,3 +101,124 @@ body.vh-active .vh-main{min-width:0}
 .landing-cta>span{font-size:14px;color:#555;flex:1}
 .landing-cta>.btn{white-space:nowrap;flex-shrink:0}
 @media(max-width:570px){.landing-cta{flex-direction:column;align-items:stretch;gap:12px}.landing-cta>.btn{width:100%}}
+
+
+/* V13 homepage — reference-matched two-column, one-screen composition.
+   Scoped to .referral-home: does not affect /vh-only, /form or flyer rendering. */
+.referral-home{min-height:100dvh;display:flex;flex-direction:column}
+.referral-home .header{height:clamp(66px,11.5dvh,94px);flex:0 0 auto}
+.referral-home .head{height:100%}
+.referral-home .brand img{max-width:158px;max-height:54px}
+.referral-home .landing{
+  flex:1 1 auto;min-height:0;max-width:1280px;width:min(1280px,calc(100% - 72px));
+  padding:clamp(18px,3.6dvh,38px) 0;
+  display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);
+  gap:clamp(32px,6vw,90px);align-items:center;
+}
+.referral-home .landing-primary,.referral-home .landing-secondary{min-width:0}
+.referral-home .kicker{font-size:clamp(10px,1vw,13px);letter-spacing:.07em}
+.referral-home .landing h1{
+  font-size:clamp(32px,3.75vw,56px);line-height:1.11;letter-spacing:-.041em;
+  margin:clamp(14px,2.8dvh,26px) 0 clamp(14px,2.6dvh,24px);
+}
+.referral-home .landing-lede{font-size:clamp(13px,1.12vw,16px);line-height:1.6;max-width:510px;margin:0;color:var(--muted)}
+.referral-home .rewards{display:block;margin-top:clamp(20px,4.2dvh,40px);max-width:none}
+.referral-home .rewards>.reward-card{padding:clamp(17px,2.6dvh,28px) clamp(20px,2.3vw,32px);gap:2px;border-radius:14px}
+.referral-home .rewards span{font-size:clamp(12px,1vw,15px)}
+.referral-home .rewards strong{font-size:clamp(37px,4vw,58px);line-height:1.28}
+.referral-home .rewards small{font-size:clamp(11px,.98vw,13px);line-height:1.4}
+.referral-home .landing-secondary h2{font-size:clamp(22px,2vw,29px);line-height:1.25;letter-spacing:-.035em;margin:0 0 clamp(17px,2.8dvh,27px)}
+.referral-home .landing-secondary>p{color:var(--muted);font-size:clamp(13px,1.1vw,16px);line-height:1.65;max-width:540px;margin:0}
+.referral-home .landing-secondary>.terms{font-size:clamp(11px,.85vw,13px)!important;margin:clamp(18px,3dvh,28px) 0 0!important;line-height:1.6!important}
+.referral-home .landing-cta{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-top:clamp(24px,4.4dvh,44px);max-width:none}
+.referral-home .landing-cta>span{font-size:clamp(12px,.94vw,14px);line-height:1.55;min-width:0}
+.referral-home .landing-cta>.btn{font-size:clamp(12px,.98vw,14px);padding:12px 17px;min-height:50px}
+.referral-home .foot{flex:0 0 auto;font-size:11px;min-height:42px;display:flex;align-items:center;padding:9px 0}
+@media (max-width:900px){
+  .referral-home .landing{width:min(100% - 42px,720px);grid-template-columns:1fr;gap:22px;align-content:center;align-items:start;padding:20px 0}
+  .referral-home .landing h1{font-size:clamp(31px,5.8vw,44px);margin:12px 0}
+  .referral-home .rewards{margin-top:18px}
+  .referral-home .rewards>.reward-card{padding:14px 20px}
+  .referral-home .rewards strong{font-size:38px}
+  .referral-home .landing-secondary h2{font-size:22px;margin-bottom:10px}
+  .referral-home .landing-secondary>p{line-height:1.5}
+  .referral-home .landing-secondary>.terms{margin:9px 0 0!important;line-height:1.4!important}
+  .referral-home .landing-cta{margin-top:14px}
+}
+@media (max-width:540px){
+  .referral-home .header{height:60px}
+  .referral-home .brand img{max-width:140px;max-height:44px}
+  .referral-home .landing{width:calc(100% - 32px);gap:16px;padding:14px 0}
+  .referral-home .landing h1{font-size:clamp(27px,7.8vw,37px);line-height:1.1}
+  .referral-home .landing-lede{font-size:12px}
+  .referral-home .rewards{margin-top:14px}
+  .referral-home .rewards>.reward-card{padding:11px 17px}
+  .referral-home .rewards strong{font-size:32px}
+  .referral-home .rewards small{font-size:11px}
+  .referral-home .landing-secondary h2{font-size:20px}
+  .referral-home .landing-secondary>p{font-size:12px;line-height:1.4}
+  .referral-home .landing-secondary>.terms{font-size:10px!important}
+  .referral-home .landing-cta{gap:10px;flex-direction:row;align-items:center}
+  .referral-home .landing-cta>span{font-size:11px}
+  .referral-home .landing-cta>.btn{white-space:normal;max-width:145px;min-height:45px;font-size:11px;line-height:1.3;padding:9px 10px}
+  .referral-home .foot{min-height:30px;font-size:10px}
+}
+/* Extreme short screens may need scrolling to keep legally relevant copy accessible. */
+@media(max-height:590px) and (min-width:901px){
+  .referral-home .header{height:57px}
+  .referral-home .landing{padding:12px 0}
+  .referral-home .landing h1{font-size:clamp(30px,3.2vw,42px);margin:10px 0}
+  .referral-home .rewards{margin-top:12px}
+  .referral-home .rewards>.reward-card{padding:12px 20px}
+  .referral-home .rewards strong{font-size:36px}
+  .referral-home .landing-secondary h2{margin-bottom:10px}
+  .referral-home .landing-secondary>.terms{margin-top:10px!important}
+  .referral-home .landing-cta{margin-top:14px}
+}
+
+
+/* V13 two-panel homepage: exactly one viewport on desktop, full CTA in panel 2.
+   The CSS applies ONLY to the public referral homepage. */
+@media (min-width: 901px) and (min-height: 600px) {
+  html:has(body.referral-home) {height:100%;overflow:hidden;}
+  body.referral-home {height:100dvh;min-height:0;overflow:hidden;}
+  .referral-home .header {height:clamp(65px,10dvh,85px);flex:0 0 auto;}
+  .referral-home .landing {
+    flex:1 1 0;min-height:0;max-width:1250px;
+    width:min(1250px,calc(100% - 76px));
+    display:grid!important;grid-template-columns:minmax(0,1.12fr) minmax(0,.88fr)!important;
+    gap:clamp(35px,5.2vw,76px);padding:clamp(12px,2.5dvh,25px) 0;
+    margin:0 auto;align-items:center;align-content:center;
+  }
+  .referral-home .landing-primary,.referral-home .landing-secondary {
+    min-width:0;min-height:0;margin:0;
+  }
+  .referral-home .landing-secondary {display:flex;flex-direction:column;justify-content:center;gap:0;}
+  .referral-home .landing-secondary h2 {margin:0 0 clamp(12px,2.4dvh,22px);}
+  .referral-home .landing-secondary>p {margin:0!important;max-width:none;overflow-wrap:break-word;}
+  .referral-home .landing-secondary>p.terms {margin-top:clamp(12px,2.5dvh,22px)!important;max-width:none!important;}
+  .referral-home .landing-cta {
+    display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;
+    gap:clamp(10px,1.4vw,18px);margin-top:clamp(18px,3.4dvh,32px);
+  }
+  .referral-home .landing-cta>span {min-width:0;overflow-wrap:break-word;}
+  .referral-home .landing-cta>.btn {white-space:normal;text-wrap:balance;min-width:174px;max-width:205px;}
+  .referral-home .rewards {margin-top:clamp(16px,3dvh,28px);}
+  .referral-home .foot {flex:0 0 40px;min-height:0;padding:7px 0;}
+}
+/* Compact laptop windows: preserve two columns and all of panel 2. */
+@media (min-width:901px) and (max-height:760px) {
+ .referral-home .landing h1 {font-size:clamp(30px,3.4vw,48px);margin:12px 0 14px;}
+ .referral-home .landing-lede {font-size:13px;line-height:1.45;}
+ .referral-home .rewards>.reward-card {padding:17px 22px;}
+ .referral-home .rewards strong {font-size:42px;}
+ .referral-home .landing-secondary h2 {font-size:25px;}
+ .referral-home .landing-secondary>p {font-size:13px;line-height:1.52;}
+ .referral-home .landing-secondary>p.terms {font-size:11px!important;line-height:1.48!important;}
+ .referral-home .landing-cta>span {font-size:12px;}
+ .referral-home .landing-cta>.btn {min-height:44px;}
+}
+/* Small screens must keep the complete legal copy visible rather than clipping it. */
+@media (max-width:900px), (max-height:599px) {
+ html:has(body.referral-home),body.referral-home {height:auto;overflow-x:hidden;overflow-y:auto;}
+}
