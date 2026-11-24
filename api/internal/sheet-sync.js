@@ -37,6 +37,23 @@ export default async function handler(req,res){
       try { amount=numericAmount(req.body.firstFileAmount); }
       catch(e){return json(res,400,{error:e.message});}
     }
+    const leadStatus=txt(req.body.leadStatus),firstFileStatus=txt(req.body.firstFileStatus),payout=txt(req.body.referralPayoutGenerated);
+    if(leadStatus&&!['Lead Created','Lead Onboarded','Business Started'].includes(leadStatus))return json(res,400,{error:'Invalid Lead Status'});
+    if(firstFileStatus&&!['File Disbursed','Paid on FastPay'].includes(firstFileStatus))return json(res,400,{error:'Invalid First File Status'});
+    if(payout&&!['Yes','No'].includes(payout))return json(res,400,{error:'Invalid referral payout status'});
+    if(leadStatus){safeFlags.lead_created=true;safeFlags.onboarded=leadStatus!=='Lead Created';safeFlags.business_started=leadStatus==='Business Started';}
+    if(firstFileStatus)safeExtra.first_file_status=firstFileStatus;
+    // Atomic, database-owned payout timestamp: never reset history on Yes -> No.
+    if(payout){
+      const prior=(await db('referral_leads',{filter:`id=eq.${encodeURIComponent(id)}&select=referral_payout_generated,referral_payout_generated_at,duplicate_label,first_file_amount,stage_flags,sheet_extra&limit=1`}))?.[0];
+      if(!prior)return json(res,404,{error:'Lead not found'});
+      if(payout==='Yes'&&prior.duplicate_label==='Duplicate')return json(res,409,{error:'Duplicate referrals cannot be marked paid'});
+      if(payout==='Yes'&&(Number(amount===undefined?prior.first_file_amount:amount)<3000000||
+         (firstFileStatus||prior.sheet_extra?.first_file_status)!=='Paid on FastPay'||
+         !(leadStatus?leadStatus==='Business Started':prior.stage_flags?.business_started)))
+        return json(res,409,{error:'Payout requires Business Started, at least ₹30 lakh disbursement and Paid on FastPay'});
+      await db('referral_leads',{method:'PATCH',filter:`id=eq.${encodeURIComponent(id)}`,body:{referral_payout_generated:payout,...(payout==='Yes'&&!prior.referral_payout_generated_at?{referral_payout_generated_at:new Date().toISOString()}:{})},prefer:'return=minimal'});
+    }
     const changed=await sqlStagePatch(id,safeFlags,safeExtra,amount);
     return json(res,200,{ok:true,changed});
   }

@@ -36,8 +36,11 @@ test('three stages only and independent sidebar scroll with persistent preferenc
  assert.doesNotMatch(h,/<option value="qualified">/);
  assert.match(css,/body.vh-active\{height:100dvh;overflow:hidden\}/);
 });
-test('V14 Apps Script preserves history in original Sheet1 and validates amounts through authorized sync',()=>{
- const script=read('integration/GoogleAppsScript.gs');assert.match(script,/copyTo\(ss\)/);assert.match(script,/First File Amount \(INR\)/);
- assert.match(script,/data.firstFileAmount=raw/);
+test('V15 Apps Script respects live headers and syncs approved operator fields',()=>{
+ const script=read('integration/GoogleAppsScript.gs');
+ assert.match(script,/Lead Status/);assert.match(script,/First File Status/);
+ assert.match(script,/Total Timeline/);assert.match(script,/UTM Term/);
+ assert.match(script,/data.firstFileAmount=amount/);
+ assert.doesNotMatch(script,/function migrateReferralDatabaseV14/);
  assert.match(read('api/internal/sheet-sync.js'),/numericAmount/);
 });

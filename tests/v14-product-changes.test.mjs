@@ -14,8 +14,12 @@ test('server saves referrer DSA code separately from signed VH ownership, still 
 test('dashboard shows and searches referrer DSA code in the authorized scope',()=>{
  const api=read('api/dashboard.js'),js=read('public/dashboard.js');assert.match(api,/referrer_dsa_code/);assert.match(api,/viewer.dsaCode/);assert.match(js,/<th>Referrer DSA Code<\/th>/);assert.match(js,/l.referrer_dsa_code/);
 });
-test('sheet migration is manual and non-destructive; source Sheet1 retained',()=>{
- const s=read('integration/GoogleAppsScript.gs');assert.match(s,/function migrateReferralDatabaseV14/);assert.match(s,/old\.copyTo\(ss\)/);assert.match(s,/getSheetByName\('Database'\)/);assert.match(s,/\bVH Code\b/);assert.match(s,/Referrer DSA Code/);assert.match(s,/Referred City/);assert.match(s,/Token Fingerprint/);assert.match(s,/Consent/);assert.match(s,/First File Amount \(INR\)/);assert.match(s,/readSheetEdits/);assert.match(s,/api\('update'/);
+test('live sheet is not migrated again; only existing V15 columns are synchronized',()=>{
+ const script=read('integration/GoogleAppsScript.gs');
+ assert.match(script,/getSheetByName\('Database'\)/);
+ for(const heading of ['VH Code','Referrer DSA Code','Referred City','Token Fingerprint','Consent','First File Amount (INR)','Lead Status','First File Status','UTM Term'])assert.ok(script.includes(heading));
+ assert.match(script,/function readSheetEdits/);assert.match(script,/function writePending/);
+ assert.doesNotMatch(script,/function migrateReferralDatabaseV14/);
 });
 test('database migration preserves VH attribution dsa_code and adds distinct field',()=>{
  const s=read('integration/v14-referral-database.sql');assert.match(s,/ADD COLUMN IF NOT EXISTS referrer_dsa_code/);assert.doesNotMatch(s,/DROP COLUMN/i);
