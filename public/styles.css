@@ -242,3 +242,6 @@ body.vh-active .vh-main{min-width:0}
 .vh-referrer-more div{display:grid;gap:4px;margin-top:8px;line-height:1.5}
 .vh-referrer-more span{display:block;overflow-wrap:anywhere}
 .vh-detail-btn{min-height:40px;min-width:54px}
+
+/* Photo-free creative options never show an upload control. */
+#photoField[hidden]{display:none!important}
