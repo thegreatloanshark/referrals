@@ -43,10 +43,38 @@ $('signOut').addEventListener('click',async()=>{
  location.assign('/vh-only');
 });
 void boot();
-function updatePhotoField(){const hidden=isPhotoFree($('style').value);$('photoField').hidden=hidden;$('photo').disabled=hidden;}
+let photoUploadVersion=0,photoLoading=false;
+function updatePhotoField(){const hidden=isPhotoFree($('style').value);$('photoField').hidden=hidden;$('photo').disabled=hidden;$('removePhoto').disabled=hidden||(!photo&&!photoLoading);}
 updatePhotoField();
 for(const id of ['style','headline','callout','cta','designation'])$(id).addEventListener('change',()=>{updatePhotoField();art()});
-$('photo').addEventListener('change',async(e)=>{const file=e.target.files[0];if(!file)return;if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>8_000_000){$('editorNotice').textContent='Use a JPG, PNG or WebP below 8 MB.';return}const blobUrl=URL.createObjectURL(file);try{photo=await getImage(blobUrl);$('editorNotice').textContent=file.type==='image/png'?'Photo loaded. For clean cut-outs, use a transparent PNG.':'Photo loaded with circular cropping. For background removal, upload a transparent PNG.';art()}finally{URL.revokeObjectURL(blobUrl)}});
+$('photo').addEventListener('change',async(e)=>{
+ const file=e.target.files[0];if(!file)return;
+ const version=++photoUploadVersion;
+ if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>8_000_000){
+  photoLoading=false;$('photo').value='';updatePhotoField();
+  $('editorNotice').textContent='Use a JPG, PNG or WebP below 8 MB.';return;
+ }
+ photoLoading=true;updatePhotoField();
+ $('editorNotice').textContent='Loading photo…';
+ const blobUrl=URL.createObjectURL(file);
+ try{
+  const image=await getImage(blobUrl);
+  if(version!==photoUploadVersion)return;
+  photo=image;
+  $('editorNotice').textContent=file.type==='image/png'?'Photo loaded. For clean cut-outs, use a transparent PNG.':'Photo loaded with circular cropping. For background removal, upload a transparent PNG.';
+  art();
+ }catch{
+  if(version!==photoUploadVersion)return;
+  $('photo').value='';$('editorNotice').textContent='Unable to load image. Please choose another image.';
+ }finally{
+  URL.revokeObjectURL(blobUrl);
+  if(version===photoUploadVersion){photoLoading=false;updatePhotoField();}
+ }
+});
+$('removePhoto').addEventListener('click',()=>{
+ ++photoUploadVersion;photoLoading=false;photo=null;$('photo').value='';
+ updatePhotoField();$('editorNotice').textContent='Image removed.';art();
+});
 $('shuffle').addEventListener('click',()=>{for(const id of ['style','headline','callout','cta']){const el=$(id);el.selectedIndex=Math.floor(Math.random()*el.options.length)}updatePhotoField();art()});
 function save(href,name){const a=document.createElement('a');a.href=href;a.download=name;document.body.appendChild(a);a.click();a.remove()}
 $('download').addEventListener('click',()=>{if(token&&qr&&!logo){$('editorNotice').textContent='The official brand logo has not loaded. Please refresh and try again.';return}if(token&&qr){art();save(canvas.toDataURL('image/png'),`NoBroker-Loans-Referral-${selected.name.replace(/[^a-z0-9]/gi,'-')}.png`)}});
