@@ -1,4 +1,6 @@
-import {db,sqlStagePatch} from '../../lib/supabase-server.js';
+import {clerkBackend} from '../../lib/clerk-auth.js';
+import {validateDirectory,directorySnapshot,fetchDirectoryUsers} from '../../lib/directory-sync.js';
+import {db,sqlStagePatch,syncDirectorySnapshot} from '../../lib/supabase-server.js';
 import {json,secureCompare} from '../../lib/security.js';
 import {numericAmount} from '../../lib/lead-quality.js';
 const max=100;
@@ -9,6 +11,13 @@ export default async function handler(req,res){
  if(!authorized(req))return json(res,401,{error:'Unauthorized'});
  try{
   const {action}=req.body||{};
+  if(action==='directory_sync'){
+    const rows=validateDirectory(req.body.rows);
+    const users=await fetchDirectoryUsers(clerkBackend(),rows);
+    const snapshot=directorySnapshot(rows,users);
+    const result=await syncDirectorySnapshot(snapshot);
+    return json(res,200,{ok:true,result,statuses:snapshot.map(r=>({dsaCode:r.dsa_code,email:r.registered_email,status:r.live_status,role:r.access_role}))});
+  }
   if(action==='pull'){
     const jobs=await db('referral_sync_jobs',{filter:`select=lead_id,sync_version&state=in.(pending,failed)&order=updated_at.asc&limit=${max}`});
     const result=[];

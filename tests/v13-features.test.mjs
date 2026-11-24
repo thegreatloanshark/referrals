@@ -9,8 +9,8 @@ test('Marketing is in 29-record approved roster and matched only by verified Cle
  const roster=JSON.parse(read('lib/roster.private.json'));
  assert.equal(roster.length,29);
  assert.deepEqual(roster.filter(x=>x.email==='nbloans.marketing@nobroker.in').map(x=>x.dsaCode),['DSA00100003']);
- assert.match(read('lib/clerk-auth.js'),/verification\?\.status === 'verified'/);
- assert.match(read('lib/clerk-auth.js'),/matchingProfiles.length !== 1/);
+ assert.match(read('lib/directory.js'),/verification\?\.status === 'verified'/);
+ assert.match(read('lib/directory.js'),/matchingProfiles.length !== 1/);
 });
 test('five exact first-file grading bands, never cumulative',()=>{
  for(const [amount,band,grade] of [[3125200,'₹30L+','B'],[5000000,'₹50L+','B+'],[8000000,'₹80L+','A'],[11525000,'₹1Cr+','AA'],[15000000,'₹1.5Cr+','AAA']])assert.deepEqual(qualityFor(amount),{band,grade});
@@ -18,10 +18,10 @@ test('five exact first-file grading bands, never cumulative',()=>{
  assert.equal(numericAmount('11525000.75'),'11525000.75');
  assert.throws(()=>numericAmount('123.456'));
 });
-test('QR slug is shorter than the old URL, deterministic, tamper-resistant, mapped by DSA',()=>{
- const shiv=rosterByCode('DSA00100001');const slug=easyQrSlug(shiv);
- assert.equal(slug.length,14);assert.equal(resolveEasyQrSlug(slug)?.dsaCode,shiv.dsaCode);
- assert.equal(resolveEasyQrSlug(slug.slice(0,13)+(slug.at(-1)==='X'?'Y':'X')),null);
+test('QR slug is shorter than the old URL, deterministic, tamper-resistant, mapped by DSA',async()=>{
+ const shiv=await rosterByCode('DSA00100001');const slug=easyQrSlug(shiv);
+ assert.equal(slug.length,14);assert.equal((await resolveEasyQrSlug(slug))?.dsaCode,shiv.dsaCode);
+ assert.equal(await resolveEasyQrSlug(slug.slice(0,13)+(slug.at(-1)==='X'?'Y':'X')),null);
  assert.match(read('api/qr.js'),/errorCorrectionLevel:'M',margin:5,width:1200/);
  assert.match(read('public/app.js'),/format=png/);
 });

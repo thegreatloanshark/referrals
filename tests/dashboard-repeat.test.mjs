@@ -19,6 +19,6 @@ test('latest roster and both Super Admin DSA codes retained',()=>{
  const roster=JSON.parse(read('lib/roster.private.json'));
  assert.equal(roster.length,29);
  assert.ok(roster.some(x=>x.name==='Adityaman'&&x.dsaCode==='DSA00100002'));
- assert.match(read('lib/actor.js'),/DSA00100001,DSA00100002/);
+ assert.match(read('lib/directory.js'),/DSA00100001,DSA00100002/);
  assert.match(read('api/lookup.js'),/dsaCode:profile\.dsaCode/);
 });

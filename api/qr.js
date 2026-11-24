@@ -2,10 +2,9 @@ import QRCode from 'qrcode';
 import {verifyToken,rosterByCode,easyQrSlug,json} from '../lib/security.js';
 export default async function handler(req,res){
  if(req.method!=='GET')return json(res,405,{error:'Method not allowed'});
- let claim;
- try{claim=verifyToken(req.query.token);if(!claim)return json(res,403,{error:'Invalid referral link'});}
+ let claim,profile;
+ try{claim=await verifyToken(req.query.token);if(!claim)return json(res,403,{error:'Invalid referral link'});profile=await rosterByCode(claim.code);}
  catch{return json(res,503,{error:'QR configuration unavailable'});}
- const profile=rosterByCode(claim.code);
  if(!profile)return json(res,403,{error:'Unknown referral profile'});
  const origin=process.env.REFERRAL_PUBLIC_ORIGIN || 'https://nbloans-referrals.vercel.app';
  const host=new URL(origin);

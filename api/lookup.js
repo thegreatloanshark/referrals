@@ -2,11 +2,13 @@ import {resolveAuthorizedProfile} from '../lib/clerk-auth.js';
 import {issueToken,easyQrSlug,json,restrictOrigin} from '../lib/security.js';
 
 const errors={
+  inactive_account:"Your Clerk account is inactive. Contact the administrator.",
+  directory_access_denied:"Your directory access is pending or disabled. Contact the administrator.",
   missing_bearer:'Your sign-in session was not sent. Please sign in again.',
   invalid_session:'Your Clerk session could not be verified. Sign out and sign in again.',
   no_verified_email:'Please verify the email address on your Clerk account before accessing the dashboard.',
-  email_not_in_roster:'Your verified Clerk email is not in the approved Vertical Head directory.',
-  ambiguous_roster_match:'Your Clerk account matches multiple approved profiles. Please contact the administrator.'
+  email_not_in_directory:'Your verified Clerk email is not in the approved Vertical Head directory.',
+  ambiguous_directory_match:'Your Clerk account matches multiple approved profiles. Please contact the administrator.'
 };
 export default async function handler(req,res){
   if(req.method!=='GET')return json(res,405,{error:'Method not allowed'});

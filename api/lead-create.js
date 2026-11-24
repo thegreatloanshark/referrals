@@ -8,7 +8,7 @@ export default async function handler(req,res){
  if(!restrictOrigin(req))return json(res,403,{error:'Origin not allowed'});
  try{
   const body=req.body||{};
-  const attribution=verifyToken(body.ref);
+  const attribution=await verifyToken(body.ref);
   if(!attribution)return json(res,403,{error:'A valid Vertical Head referral link is required.'});
   const answers=Object.fromEntries(fields.map(f=>[f,trim(body[f])]));
   if(fields.some(f=>!answers[f] || answers[f].length>180))return json(res,400,{error:'Complete all required fields.'});
@@ -16,8 +16,10 @@ export default async function handler(req,res){
   if(['referrerEmail','referredEmail'].some(f=>!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(answers[f])))return json(res,400,{error:'Enter valid email addresses.'});
   if(!/^[A-Za-z0-9_-]{3,40}$/.test(answers.referrerDsaCode))return json(res,400,{error:'Enter a valid Referrer DSA Code.'});
   if(body.consent!==true)return json(res,400,{error:'Consent is required.'});
+  const profile=await rosterByCode(attribution.code);
+  if(!profile)return json(res,403,{error:'Referral profile is no longer active.'});
   const duplicate=await classifyDuplicate(answers.referredMobile,answers.referredEmail);
-  const row={ dsa_code:attribution.code, referrer_dsa_code:answers.referrerDsaCode, vh_name:rosterByCode(attribution.code)?.name||null,
+  const row={ dsa_code:attribution.code, referrer_dsa_code:answers.referrerDsaCode, vh_name:profile.name,
     utm_source:attribution.utm_source||null,utm_medium:attribution.utm_medium||null,
     utm_campaign:attribution.utm_campaign||null,utm_content:attribution.utm_content||null,utm_term:attribution.utm_term||null,
     landing_url:'/form',form_answers:{...answers,consent:true},stage_flags:{lead_created:true}, duplicate_label:duplicate.label,original_lead_id:duplicate.originalLeadId,referral_payout_generated:duplicate.label==='Duplicate'?'Not Qualified for Payout':'Pending'};

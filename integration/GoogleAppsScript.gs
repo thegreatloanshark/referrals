@@ -56,3 +56,31 @@ function syncReferrals(){const lock=LockService.getScriptLock();if(!lock.tryLock
 function installReferralSync(){ScriptApp.getProjectTriggers().filter(t=>t.getHandlerFunction()==='syncReferrals').forEach(t=>ScriptApp.deleteTrigger(t));ScriptApp.newTrigger('syncReferrals').timeBased().everyMinutes(5).create();syncReferrals();}
 
 // The live Database worksheet is already migrated. No schema-altering action is provided here.
+
+// V16: independent directory trigger; existing lead sync stays unchanged.
+const VH_HEADERS=['Name','Number','Email','DSA Code','Live Status','Access Role'];
+function directoryRows(sh){
+ const h=sh.getRange(1,1,1,6).getDisplayValues()[0];
+ if(VH_HEADERS.some((v,i)=>h[i]!==v))throw Error('Vertical Heads headers do not match A:F.');
+ const n=sh.getLastRow()-1;if(n<1||n>500)throw Error('Invalid directory range');
+ return sh.getRange(2,1,n,6).getDisplayValues();
+}
+function syncVerticalHeads(){
+ const lock=LockService.getScriptLock();if(!lock.tryLock(10000))return;
+ try{
+  const sh=spreadsheet().getSheetByName('Vertical Heads');if(!sh)throw Error('Vertical Heads tab missing');
+  const before=directoryRows(sh);const rows=before.filter(r=>[r[0],r[1],r[2],r[3],r[5]].some(x=>x.trim())).map(r=>({name:r[0],mobile:r[1],email:r[2],dsaCode:r[3],role:r[5]}));
+  const result=api('directory_sync',{rows});if(!result.ok||result.statuses.length!==rows.length)throw Error('Incomplete directory response');
+  const statuses=new Map(result.statuses.map(r=>[r.dsaCode,r]));
+  // Do not write statuses into changed/reordered rows while the request was in flight.
+  const current=directoryRows(sh);const identity=r=>JSON.stringify([r[0],r[1],r[2],r[3],r[5]]);
+  if(current.length!==before.length||current.some((r,i)=>identity(r)!==identity(before[i])))throw Error('Directory edited during sync. Retry.');
+  const values=current.map(r=>{const v=statuses.get(r[3].trim());return [v&&v.email===r[2].trim().toLowerCase()?v.status:''];});
+  sh.getRange(2,5,values.length,1).setValues(values);
+ }finally{lock.releaseLock();}
+}
+function installVerticalHeadSync(){
+ syncVerticalHeads();
+ ScriptApp.getProjectTriggers().filter(t=>t.getHandlerFunction()==='syncVerticalHeads').forEach(t=>ScriptApp.deleteTrigger(t));
+ ScriptApp.newTrigger('syncVerticalHeads').timeBased().everyMinutes(5).create();
+}
