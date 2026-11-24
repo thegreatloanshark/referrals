@@ -50,10 +50,10 @@ function showLead(id){
    ['Referrer Name',referralAnswer(l,'referrerName','referrer_name')],['Referrer DSA Code',referrerCode(l)],
    ['Referrer Mobile',referralAnswer(l,'referrerMobile','referrer_mobile')],['Referrer Email',referralAnswer(l,'referrerEmail','referrer_email')],['Referrer City',referralAnswer(l,'referrerCity','referrer_city')],
    ...referred,['Lead Status',labels[stage(l)]],['Duplicate Status',l.duplicate_label||'New'],
-   ['Referral Payout Generated',l.referral_payout_generated||'Pending'],['Exact First File Amount',formatMoney(l.first_file_amount)],
+   ['Referral Payout Generated',l.referral_payout_generated||'Pending'],['First File Amount',formatMoney(l.first_file_amount)],
    ['First File Business Band',l.first_file_quality?.band||'—'],['First File Grade',l.first_file_quality?.grade||'—'],
    ...Object.entries(l.form_answers||{}).filter(([k])=>!['referrerName','referrer_name','referrerDsaCode','referrer_dsa_code','referrerMobile','referrer_mobile','referrerEmail','referrer_email','referrerCity','referrer_city','referredName','referred_name','referredMobile','referred_mobile','referredEmail','referred_email','referredCity','referred_city'].includes(k)).map(([k,v])=>[k.replace(/([A-Z])/g,' $1'),typeof v==='object'?JSON.stringify(v):String(v)])
- ]:[['Lead ID',l.id],...referred,['Exact First File Amount',formatMoney(l.first_file_amount)]];
+ ]:[['Lead ID',l.id],...referred,['First File Amount',formatMoney(l.first_file_amount)]];
  $('vhLeadDetails').innerHTML=pairs.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('');$('vhLeadBackdrop').hidden=false;
 }
 function install(){if(window.__vhDashboardInstalled)return;window.__vhDashboardInstalled=true;
@@ -74,7 +74,7 @@ function install(){if(window.__vhDashboardInstalled)return;window.__vhDashboardI
  $('vhCopyLink').addEventListener('click',async()=>{if(!token)return;await navigator.clipboard.writeText(shortReferralPath?`${location.origin}${shortReferralPath}`:`${location.origin}/form?ref=${encodeURIComponent(token)}`);$('vhCopyLink').textContent='Copied!';});
  $('vhExport').addEventListener('click',()=>{
   const admin=role==='super_admin';
-  const fields=['Lead ID','Created At','VH Code','Referrer DSA Code','Referred Name','Referred Email','Lead Status','Duplicate Status','Referral Payout Generated','Exact First File Amount',...(admin?['First File Band','First File Grade']:[])];
+  const fields=['Lead ID','Created At','VH Code','Referrer DSA Code','Referred Name','Referred Email','Lead Status','Duplicate Status','Referral Payout Generated','First File Amount',...(admin?['First File Band','First File Grade']:[])];
   const data=leads.map(l=>[l.id,l.created_at,l.dsa_code,referrerCode(l),leadName(l),referralAnswer(l,'referredEmail','referred_email'),labels[stage(l)],l.duplicate_label||'New',l.referral_payout_generated||'Pending',l.first_file_amount??'',...(admin?[l.first_file_quality?.band||'',l.first_file_quality?.grade||'']:[])]);
   const csv=[fields,...data].map(row=>row.map(x=>'"'+String(x??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');
   const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='NoBroker-Loans-Referrals.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);
