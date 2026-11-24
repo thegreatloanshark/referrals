@@ -285,3 +285,12 @@ body.vh-active .vh-main{min-width:0}
 #vh-creative .preview canvas{width:min(100%,390px,calc((100dvh - 390px)*.8))}
 @media(max-width:900px){#vh-creative .preview canvas{width:min(100%,390px)} }
 @media(min-width:901px) and (max-height:640px){#vh-creative .preview canvas{width:min(100%,260px)}}
+
+/* Referral performance: total plus mutually exclusive current stages. */
+.vh-performance-head{align-items:center;gap:10px;margin-top:4px}
+.vh-performance-head h2{margin:0}
+.vh-total-leads{display:flex;align-items:center;gap:10px;flex-shrink:0;border:1px solid #f3c8cc;background:#fff4f5;border-radius:10px;padding:7px 12px;color:#202124}
+.vh-total-leads span{font-size:11px;font-weight:600;white-space:nowrap}
+.vh-total-leads strong{color:#D80000;font-size:26px;line-height:1.1;font-variant-numeric:tabular-nums}
+.vh-stage-note{margin:12px 0 0;font-size:11px;line-height:1.4}
+@media(max-width:380px){.vh-performance-head{flex-wrap:wrap}.vh-total-leads{padding:6px 10px}.vh-performance .vh-stat{padding:10px 6px}.vh-performance .vh-stat span{font-size:10px;overflow-wrap:anywhere}}

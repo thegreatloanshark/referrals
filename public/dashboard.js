@@ -4,7 +4,7 @@ const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;
 const labels={lead_created:'Lead Created',onboarded:'Lead Onboarded',business_started:'Business Started'};
 let leads=[],role='vh',active='overview',token='',shortReferralPath='';
 const leadName=l=>l.form_answers?.referredName||l.form_answers?.referred_name||'Unnamed partner';
-const stage=l=>l.stage_flags?.business_started?'business_started':l.stage_flags?.onboarded?'onboarded':'lead_created';
+const stage=l=>l.stage_flags?.business_started===true?'business_started':l.stage_flags?.onboarded===true?'onboarded':'lead_created';
 function showTab(next){
  active=next;
  if(window.matchMedia('(max-width:780px)').matches){$('vhDashboardShell')?.classList.add('vh-sidebar-closed');const b=$('vhSidebarBackdrop');if(b)b.hidden=true;$('vhToggleSidebar')?.setAttribute('aria-expanded','false');}
@@ -31,11 +31,14 @@ function table(rows){
  }).join('');
  return head+(body||`<tr><td colspan="${admin?10:6}" class="vh-empty">No leads yet. Share your referral link to get started.</td></tr>`)+`</tbody></table></div>`;
 }
-function renderAll(){let q=$('vhSearch')?.value.trim().toLowerCase()||'';let f=$('vhStageFilter')?.value||'all';const filtered=leads.filter(l=>(f==='all'||l.stage_flags?.[f]===true)&&(l.id.toLowerCase().includes(q)||leadName(l).toLowerCase().includes(q)||String(l.dsa_code).toLowerCase().includes(q)||String(l.referrer_dsa_code||l.form_answers?.referrerDsaCode||'').toLowerCase().includes(q)));$('vhAllLeads').innerHTML=table(filtered);}
+function renderAll(){let q=$('vhSearch')?.value.trim().toLowerCase()||'';let f=$('vhStageFilter')?.value||'all';const filtered=leads.filter(l=>(f==='all'||stage(l)===f)&&(l.id.toLowerCase().includes(q)||leadName(l).toLowerCase().includes(q)||String(l.dsa_code).toLowerCase().includes(q)||String(l.referrer_dsa_code||l.form_answers?.referrerDsaCode||'').toLowerCase().includes(q)));$('vhAllLeads').innerHTML=table(filtered);}
 function render(data){
  role=data.role||'vh';leads=Array.isArray(data.leads)?data.leads:[];
- const counts=data.counts||{};
- $('vhStats').innerHTML=['lead_created','onboarded','business_started'].map(k=>`<div class="vh-stat"><span>${labels[k]}</span><strong>${Number(counts[k]||0).toLocaleString('en-IN')}</strong><small>Verified reporting data</small></div>`).join('');
+ // Derive a mutually exclusive split from authorized rows, also compatible with an older API response.
+ const split={lead_created:0,onboarded:0,business_started:0};
+ for(const lead of leads)split[stage(lead)]++;
+ $('vhTotalLeads').textContent=leads.length.toLocaleString('en-IN');
+ $('vhStats').innerHTML=['lead_created','onboarded','business_started'].map(k=>`<div class="vh-stat"><span>${labels[k]}</span><strong>${split[k].toLocaleString('en-IN')}</strong><small>Current stage</small></div>`).join('');
  $('vhRecent').innerHTML=table(leads.slice(0,5));
  $('vhReferralsHeading').textContent=role==='super_admin'?'All Referrals':'My Referrals';
  $('vhProfileRole').textContent=role==='super_admin'?'Super Admin · All leads':'Vertical Head · Own DSA only';
@@ -50,10 +53,10 @@ function showLead(id){
    ['Referrer Name',referralAnswer(l,'referrerName','referrer_name')],['Referrer DSA Code',referrerCode(l)],
    ['Referrer Mobile',referralAnswer(l,'referrerMobile','referrer_mobile')],['Referrer Email',referralAnswer(l,'referrerEmail','referrer_email')],['Referrer City',referralAnswer(l,'referrerCity','referrer_city')],
    ...referred,['Lead Status',labels[stage(l)]],['Duplicate Status',l.duplicate_label||'New'],
-   ['Referral Payout Generated',l.referral_payout_generated||'Pending'],['First File Amount',formatMoney(l.first_file_amount)],
+   ['Referral Payout Generated',l.referral_payout_generated||'Pending'],['Exact First File Amount',formatMoney(l.first_file_amount)],
    ['First File Business Band',l.first_file_quality?.band||'—'],['First File Grade',l.first_file_quality?.grade||'—'],
    ...Object.entries(l.form_answers||{}).filter(([k])=>!['referrerName','referrer_name','referrerDsaCode','referrer_dsa_code','referrerMobile','referrer_mobile','referrerEmail','referrer_email','referrerCity','referrer_city','referredName','referred_name','referredMobile','referred_mobile','referredEmail','referred_email','referredCity','referred_city'].includes(k)).map(([k,v])=>[k.replace(/([A-Z])/g,' $1'),typeof v==='object'?JSON.stringify(v):String(v)])
- ]:[['Lead ID',l.id],...referred,['First File Amount',formatMoney(l.first_file_amount)]];
+ ]:[['Lead ID',l.id],...referred,['Exact First File Amount',formatMoney(l.first_file_amount)]];
  $('vhLeadDetails').innerHTML=pairs.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('');$('vhLeadBackdrop').hidden=false;
 }
 function install(){if(window.__vhDashboardInstalled)return;window.__vhDashboardInstalled=true;
@@ -74,7 +77,7 @@ function install(){if(window.__vhDashboardInstalled)return;window.__vhDashboardI
  $('vhCopyLink').addEventListener('click',async()=>{if(!token)return;await navigator.clipboard.writeText(shortReferralPath?`${location.origin}${shortReferralPath}`:`${location.origin}/form?ref=${encodeURIComponent(token)}`);$('vhCopyLink').textContent='Copied!';});
  $('vhExport').addEventListener('click',()=>{
   const admin=role==='super_admin';
-  const fields=['Lead ID','Created At','VH Code','Referrer DSA Code','Referred Name','Referred Email','Lead Status','Duplicate Status','Referral Payout Generated','First File Amount',...(admin?['First File Band','First File Grade']:[])];
+  const fields=['Lead ID','Created At','VH Code','Referrer DSA Code','Referred Name','Referred Email','Lead Status','Duplicate Status','Referral Payout Generated','Exact First File Amount',...(admin?['First File Band','First File Grade']:[])];
   const data=leads.map(l=>[l.id,l.created_at,l.dsa_code,referrerCode(l),leadName(l),referralAnswer(l,'referredEmail','referred_email'),labels[stage(l)],l.duplicate_label||'New',l.referral_payout_generated||'Pending',l.first_file_amount??'',...(admin?[l.first_file_quality?.band||'',l.first_file_quality?.grade||'']:[])]);
   const csv=[fields,...data].map(row=>row.map(x=>'"'+String(x??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');
   const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='NoBroker-Loans-Referrals.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);
