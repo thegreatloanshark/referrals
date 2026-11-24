@@ -10,9 +10,11 @@ export default async function handler(req,res){
   // Ownership filtering happens in the server, never from a request parameter.
   const scope=viewer.role==='super_admin'?'':`&dsa_code=eq.${encodeURIComponent(viewer.dsaCode)}`;
   const rows=await db('referral_leads',{filter:`select=id,created_at,dsa_code,referrer_dsa_code,form_answers,stage_flags,duplicate_label,referral_payout_generated,first_file_amount,updated_at&order=created_at.desc&limit=1000${scope}`});
-  // Keep precise money only server-side; the dashboard receives a quality band.
+  // Exact amount is exposed only inside an already authorized, owner-scoped response.
+  // Ordinary VH UI reveals it in Details; only Super Admin gets band/grade.
   const safeRows=rows.map(({first_file_amount,...lead})=>({
-     ...lead,first_file_quality:lead.stage_flags?.business_started?qualityFor(first_file_amount):{band:null,grade:null}
+     ...lead, first_file_amount,
+     ...(viewer.role==='super_admin'?{first_file_quality:lead.stage_flags?.business_started?qualityFor(first_file_amount):{band:null,grade:null}}:{})
   }));
   const counts={lead_created:rows.length};
   for(const lead of rows){for(const [k,v] of Object.entries(lead.stage_flags||{})){if(k!=='lead_created'&&v===true)counts[k]=(counts[k]||0)+1;}}

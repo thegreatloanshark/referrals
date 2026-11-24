@@ -234,3 +234,11 @@ body.vh-active .vh-main{min-width:0}
 @media(max-width:780px){.vh-sidebar{z-index:100;width:min(300px,86vw);padding:20px 16px;gap:20px;transition:transform .18s ease;overflow-y:auto}.vh-sidebar-close{display:block;align-self:flex-end;min-height:48px;min-width:48px;border:1px solid #e6e6e9;border-radius:10px;background:#fff;font-size:24px}.vh-sidebar-backdrop:not([hidden]){position:fixed;inset:0;z-index:95;background:#0007;display:block}.vh-sidebar-toggle{position:relative;z-index:50;min-width:48px;min-height:48px}.vh-nav{display:flex;flex-direction:column}.vh-nav button{min-height:48px}.vh-sidebar .vh-side-bottom{display:block;margin-top:auto}.vh-app.vh-sidebar-closed .vh-sidebar{visibility:hidden;pointer-events:none;transform:translateX(-110%)}}
 
 .city-help{font-size:11px;color:#626262;margin:7px 0 4px}.referral-form-panel input[list]{background-image:none}
+
+/* V15 dashboard — compact referral list with expandable referrer contacts. */
+.vh-referrer{min-width:160px;max-width:260px;white-space:normal;overflow-wrap:anywhere}
+.vh-referrer-more{margin-top:7px;font-size:12px;color:#59616e}
+.vh-referrer-more summary{cursor:pointer;color:#bd0019;font-weight:650;list-style:revert}
+.vh-referrer-more div{display:grid;gap:4px;margin-top:8px;line-height:1.5}
+.vh-referrer-more span{display:block;overflow-wrap:anywhere}
+.vh-detail-btn{min-height:40px;min-width:54px}

@@ -12,7 +12,7 @@ test('server saves referrer DSA code separately from signed VH ownership, still 
  const s=read('api/lead-create.js');assert.match(s,/verifyToken\(body.ref\)/);assert.match(s,/referrer_dsa_code:answers.referrerDsaCode/);assert.match(s,/dsa_code:attribution.code/);assert.match(s,/body.consent!==true/);assert.match(s,/classifyDuplicate/);
 });
 test('dashboard shows and searches referrer DSA code in the authorized scope',()=>{
- const api=read('api/dashboard.js'),js=read('public/dashboard.js');assert.match(api,/referrer_dsa_code/);assert.match(api,/viewer.dsaCode/);assert.match(js,/<th>Referrer DSA Code<\/th>/);assert.match(js,/l.referrer_dsa_code/);
+ const api=read('api/dashboard.js'),js=read('public/dashboard.js');assert.match(api,/referrer_dsa_code/);assert.match(api,/viewer.dsaCode/);assert.match(js,/<th>Referrer<\/th>/);assert.match(js,/DSA Code:/);assert.match(js,/l.referrer_dsa_code/);
 });
 test('live sheet is not migrated again; only existing V15 columns are synchronized',()=>{
  const script=read('integration/GoogleAppsScript.gs');
