@@ -5,12 +5,12 @@ import {qualityFor,numericAmount} from '../lib/lead-quality.js';
 import {easyQrSlug,resolveEasyQrSlug,rosterByCode} from '../lib/security.js';
 process.env.REFERRAL_SIGNING_SECRET='a secure testing secret longer than thirty two characters';
 const read=f=>fs.readFileSync(new URL('../'+f,import.meta.url),'utf8');
-test('Marketing is in 28-record approved roster and matched only by verified Clerk email',()=>{
+test('Marketing is in 29-record approved roster and matched only by verified Clerk email',()=>{
  const roster=JSON.parse(read('lib/roster.private.json'));
- assert.equal(roster.length,28);
+ assert.equal(roster.length,29);
  assert.deepEqual(roster.filter(x=>x.email==='nbloans.marketing@nobroker.in').map(x=>x.dsaCode),['DSA00100003']);
  assert.match(read('lib/clerk-auth.js'),/verification\?\.status === 'verified'/);
- assert.match(read('lib/clerk-auth.js'),/matches.length>1/);
+ assert.match(read('lib/clerk-auth.js'),/matchingProfiles.length !== 1/);
 });
 test('five exact first-file grading bands, never cumulative',()=>{
  for(const [amount,band,grade] of [[3125200,'₹30L+','B'],[5000000,'₹50L+','B+'],[8000000,'₹80L+','A'],[11525000,'₹1Cr+','AA'],[15000000,'₹1.5Cr+','AAA']])assert.deepEqual(qualityFor(amount),{band,grade});
@@ -36,8 +36,8 @@ test('three stages only and independent sidebar scroll with persistent preferenc
  assert.doesNotMatch(h,/<option value="qualified">/);
  assert.match(css,/body.vh-active\{height:100dvh;overflow:hidden\}/);
 });
-test('Apps Script keeps legacy history and updates amount only from authorized sheet sync',()=>{
- const script=read('integration/GoogleAppsScript.gs');assert.match(script,/Qualified \(Legacy\)/);assert.match(script,/First File Amount \(INR\)/);
- assert.match(script,/data.firstFileAmount=amount/);
+test('V14 Apps Script preserves history in original Sheet1 and validates amounts through authorized sync',()=>{
+ const script=read('integration/GoogleAppsScript.gs');assert.match(script,/copyTo\(ss\)/);assert.match(script,/First File Amount \(INR\)/);
+ assert.match(script,/data.firstFileAmount=raw/);
  assert.match(read('api/internal/sheet-sync.js'),/numericAmount/);
 });

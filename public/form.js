@@ -7,7 +7,7 @@ const token=new URL(location.href).searchParams.get('ref')||'';
  try{const response=await fetch('/api/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token})});if(!response.ok)throw Error('Invalid link');shell.hidden=false;form.hidden=false;message.textContent='Enter the details below to continue.';}catch{deny();}
 })();
 form.addEventListener('submit',async e=>{
- e.preventDefault();if(!form.reportValidity())return;
+ e.preventDefault();const consentError=document.getElementById('consentError');if(!form.elements.consent.checked){consentError.hidden=false;form.elements.consent.focus();return;}consentError.hidden=true;if(!form.reportValidity())return;
  const button=form.querySelector('button[type=submit]');button.disabled=true;message.textContent='Submitting your referral…';
  try{
   const values=Object.fromEntries(new FormData(form));
@@ -18,4 +18,6 @@ form.addEventListener('submit',async e=>{
 });
 
 // Repeat submissions use the same validated referral token, but a fresh lead record.
-document.getElementById('referAnother').addEventListener('click',()=>{document.getElementById('formSuccess').hidden=true;form.reset();form.hidden=false;form.querySelector('button[type=submit]').disabled=false;message.textContent='Enter the next Loan Partner’s details below.';form.scrollIntoView({behavior:'smooth',block:'start'});});
+document.getElementById('referAnother').addEventListener('click',()=>{document.getElementById('formSuccess').hidden=true;form.reset();document.getElementById('consentError').hidden=true;form.hidden=false;form.querySelector('button[type=submit]').disabled=false;message.textContent='Enter the next Loan Partner’s details below.';form.scrollIntoView({behavior:'smooth',block:'start'});});
+
+form.elements.consent.addEventListener('change',()=>{if(form.elements.consent.checked)document.getElementById('consentError').hidden=true;});

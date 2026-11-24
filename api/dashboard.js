@@ -9,7 +9,7 @@ export default async function handler(req,res){
   if(!viewer)return json(res,403,{error:'Access restricted to approved Vertical Heads.'});
   // Ownership filtering happens in the server, never from a request parameter.
   const scope=viewer.role==='super_admin'?'':`&dsa_code=eq.${encodeURIComponent(viewer.dsaCode)}`;
-  const rows=await db('referral_leads',{filter:`select=id,created_at,dsa_code,form_answers,stage_flags,duplicate_label,referral_payout_generated,first_file_amount,updated_at&order=created_at.desc&limit=1000${scope}`});
+  const rows=await db('referral_leads',{filter:`select=id,created_at,dsa_code,referrer_dsa_code,form_answers,stage_flags,duplicate_label,referral_payout_generated,first_file_amount,updated_at&order=created_at.desc&limit=1000${scope}`});
   // Keep precise money only server-side; the dashboard receives a quality band.
   const safeRows=rows.map(({first_file_amount,...lead})=>({
      ...lead,first_file_quality:lead.stage_flags?.business_started?qualityFor(first_file_amount):{band:null,grade:null}

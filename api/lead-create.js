@@ -1,7 +1,7 @@
 import { verifyToken,json,restrictOrigin,rosterByCode } from '../lib/security.js';
 import { db } from '../lib/supabase-server.js';
 import { classifyDuplicate } from '../lib/duplicates.js';
-const fields=['referrerName','referrerMobile','referrerEmail','referrerCity','referredName','referredMobile','referredEmail'];
+const fields=['referrerName','referrerDsaCode','referrerMobile','referrerEmail','referrerCity','referredName','referredMobile','referredEmail','referredCity'];
 const trim=v=>typeof v==='string'?v.trim():'';
 export default async function handler(req,res){
  if(req.method!=='POST')return json(res,405,{error:'Method not allowed'});
@@ -14,9 +14,10 @@ export default async function handler(req,res){
   if(fields.some(f=>!answers[f] || answers[f].length>180))return json(res,400,{error:'Complete all required fields.'});
   if(!/^[6-9]\d{9}$/.test(answers.referrerMobile)||!/^[6-9]\d{9}$/.test(answers.referredMobile))return json(res,400,{error:'Enter valid 10-digit Indian mobile numbers.'});
   if(['referrerEmail','referredEmail'].some(f=>!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(answers[f])))return json(res,400,{error:'Enter valid email addresses.'});
+  if(!/^[A-Za-z0-9_-]{3,40}$/.test(answers.referrerDsaCode))return json(res,400,{error:'Enter a valid Referrer DSA Code.'});
   if(body.consent!==true)return json(res,400,{error:'Consent is required.'});
   const duplicate=await classifyDuplicate(answers.referredMobile,answers.referredEmail);
-  const row={ dsa_code:attribution.code, vh_name:rosterByCode(attribution.code)?.name||null,
+  const row={ dsa_code:attribution.code, referrer_dsa_code:answers.referrerDsaCode, vh_name:rosterByCode(attribution.code)?.name||null,
     utm_source:attribution.utm_source||null,utm_medium:attribution.utm_medium||null,
     utm_campaign:attribution.utm_campaign||null,utm_content:attribution.utm_content||null,utm_term:attribution.utm_term||null,
     landing_url:'/form',form_answers:{...answers,consent:true},stage_flags:{lead_created:true}, duplicate_label:duplicate.label,original_lead_id:duplicate.originalLeadId,referral_payout_generated:duplicate.label==='Duplicate'?'Not Qualified for Payout':'Pending'};
