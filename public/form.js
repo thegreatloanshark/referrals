@@ -8,7 +8,7 @@ const deny=()=>{shell.hidden=true;form.hidden=true;linkError.hidden=false;};
 const token=new URL(location.href).searchParams.get('ref')||'';
 (async()=>{
  if(!token){deny();return;}
- try{const response=await fetch('/api/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token})});if(!response.ok)throw Error('Invalid link');shell.hidden=false;form.hidden=false;message.textContent='Enter the details below to continue.';}catch{deny();}
+ try{const response=await fetch('/api/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token})});if(!response.ok)throw Error('Invalid link');shell.hidden=false;form.hidden=false;message.textContent='Enter the Referral details below.';}catch{deny();}
 })();
 form.addEventListener('submit',async e=>{
  e.preventDefault();const consentError=document.getElementById('consentError');if(!form.elements.consent.checked){consentError.hidden=false;form.elements.consent.focus();return;}consentError.hidden=true;if(!form.reportValidity())return;
